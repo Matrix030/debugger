@@ -20,10 +20,7 @@ questions:
       ru: Как работает планирование в Airflow? Объясните логическую дату (execution_date), start_date, schedule_interval,
         catchup и обратное заполнение (backfill). В чём разница между depends_on_past и wait_for_downstream? Как выполнить
         backfill исторических данных без запуска нижестоящих DAG?
-    code: "# DAG with catchup disabled\nwith DAG('daily_etl',\n         start_date=datetime(2024,1,1),\n         schedule_interval='@daily',\n\
-      \         catchup=False) as dag:\n    ...\n\n# Backfill via CLI\nairflow dags backfill daily_etl --start-date 2024-01-01\
-      \ --end-date 2024-01-10\n\n# depends_on_past: task run waits for previous task run (same DAG, same task, previous execution\
-      \ date)\nPythonOperator(task_id='validate', depends_on_past=True, wait_for_downstream=False, ...)\n\n# wait_for_downstream:\
+    code: null
       \ waits for all previous task runs within the same execution date's downstream tasks\n"
   follow_ups:
     en:
@@ -56,10 +53,7 @@ questions:
       ru: 'Каковы лучшие практики написания продакшен- DAG в Airflow? Объясните: избегание кода верхнего уровня, обращающегося
         к БД, идемпотентность, использование идемпотентных операторов, динамическая генерация DAG (через Jinja или Python).
         Почему задачи должны быть идемпотентными?'
-    code: "# BAD: top-level code loading data\nfrom my_db import get_config\nCONFIG = get_config()  # Executed on every scheduler\
-      \ heartbeat\n\n# GOOD: lazy loading inside tasks\n@task\ndef get_config_task():\n    from my_db import get_config\n\
-      \    return get_config()\n\n# Dynamic DAG generation (avoid too many files)\ndef generate_dag(dag_id, schedule):\n \
-      \   with DAG(dag_id, schedule_interval=schedule) as dag:\n        task = BashOperator(task_id='run', bash_command=f'echo\
+    code: null
       \ {dag_id}')\n    return dag\n\nfor customer in ['cust_a', 'cust_b']:\n    globals()[f'dag_{customer}'] = generate_dag(f'process_{customer}',\
       \ '@daily')\n"
   follow_ups:

@@ -20,14 +20,7 @@ questions:
       ru: Что такое отложенные операторы (deferrable operators) в Airflow 2.2+? Как они снижают потребление ресурсов воркеров?
         Объясните концепцию Trigger, компонент Triggerer и разницу между классическим сенсором с poke_interval и отложенным
         режимом. Покажите пример отложенного оператора.
-    code: "# Classic sensor (worker sits idle poking)\nwait = FileSensor(\n    task_id='wait_for_file',\n    filepath='/data/file.csv',\n\
-      \    poke_interval=30,\n    timeout=3600,\n    mode='poke'  # default, occupies worker slot\n)\n\n# Deferrable sensor\
-      \ (frees worker)\nwait = FileSensor(\n    task_id='wait_for_file',\n    filepath='/data/file.csv',\n    timeout=3600,\n\
-      \    mode='reschedule'  # older, still consumes DB writes\n)\n\n# True deferrable operator (Airflow 2.2+ with Triggerer)\n\
-      from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor\nwait = S3KeySensor(\n    task_id='wait_for_s3',\n \
-      \   bucket_key='data.csv',\n    deferrable=True  # uses Triggerer\n)\n\n# Custom deferrable operator (simplified)\n\
-      class MyDeferrableSensor(BaseSensorOperator):\n    def execute(self, context):\n        self.defer(trigger=MyTrigger(),\
-      \ method_name=\"execute_complete\")\n"
+    code: null
   follow_ups:
     en:
     - What is the role of the Triggerer process?
@@ -59,12 +52,7 @@ questions:
       ru: 'Как развернуть Airflow в Kubernetes? Объясните Helm чарт (community или официальный). Опишите поды: scheduler,
         webserver, workers (Celery) и опциональные компоненты (Redis, Postgres, Flower). Когда использовать KubernetesExecutor
         вместо CeleryExecutor на K8s? Как управлять DAG с помощью GitSync или persistent volume?'
-    code: "# values.yaml for official Helm chart\nexecutor: CeleryExecutor\n# or executor: KubernetesExecutor\n\n# DAGs persistence\n\
-      dags:\n  persistence:\n    enabled: true\n    size: 10Gi\n  gitSync:\n    enabled: true\n    repo: https://github.com/org/airflow-dags.git\n\
-      \    branch: main\n    syncWait: 60\n\n# Airflow configuration override\nconfig:\n  core:\n    load_examples: False\n\
-      \  scheduler:\n    min_file_process_interval: 30\n\n# KubernetesExecutor pod template\nworkers:\n  kubernetes:\n   \
-      \ pod_template_file: /opt/airflow/pod_templates/pod_template.yaml\n\n# Install\nhelm repo add apache-airflow https://airflow.apache.org\n\
-      helm install airflow apache-airflow/airflow -f values.yaml\n"
+    code: null
   follow_ups:
     en:
     - How to scale scheduler replicas (highly available) in Airflow 2.6+?
@@ -96,14 +84,7 @@ questions:
       ru: 'Какие существуют паттерны динамической генерации DAG в Airflow? Сравните статические DAG (много файлов) с динамической
         генерацией из конфига (JSON/YAML). Объясните риски: производительность планировщика и время парсинга DAG. Как обрабатывать
         большое количество похожих DAG (например, на арендатора) без перегрузки планировщика?'
-    code: "# Dynamic DAGs using Python (single file)\ndef create_dag(tenant_name, schedule):\n    with DAG(dag_id=f'{tenant_name}_daily_etl',\
-      \ schedule_interval=schedule) as dag:\n        start = DummyOperator(task_id='start')\n        process = BashOperator(task_id='process',\
-      \ bash_command=f'run_for_tenant {tenant_name}')\n        start >> process\n    return dag\n\ntenants = [{'name': 'acme',\
-      \ 'schedule': '@daily'}, {'name': 'globex', 'schedule': '@hourly'}]\nfor t in tenants:\n    globals()[f'dag_{t[\"name\"\
-      ]}'] = create_dag(t['name'], t['schedule'])\n\n# Better: use Airflow 2.3+ Dynamic DAGs with DAG definition and config\n\
-      # But still caution with many DAGs\n\n# Alternative: single parametrized DAG using Airflow's config\nwith DAG(dag_id='tenant_etl',\
-      \ params={'tenant': 'default'}) as dag:\n    task = BashOperator(task_id='run', bash_command='run_tenant {{ params.tenant\
-      \ }}')\n# Trigger with API: POST /dags/tenant_etl/dagRuns with JSON {\"conf\": {\"tenant\": \"acme\"}}\n"
+    code: null
   follow_ups:
     en:
     - How many DAGs can a scheduler handle (ballpark)?

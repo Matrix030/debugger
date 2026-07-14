@@ -37,13 +37,7 @@ questions:
       text:
         en: "What are primary keys, foreign keys, and constraints in SQL databases?"
         ru: "Что такое первичные и внешние ключи и ограничения (constraints) в SQL-базах?"
-      code: |
-        CREATE TABLE orders (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users(id),
-            amount DECIMAL(10,2) CHECK (amount > 0),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      code: null
     follow_ups:
       en:
         - "What is a composite primary key?"

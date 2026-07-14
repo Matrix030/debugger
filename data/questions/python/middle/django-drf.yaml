@@ -13,11 +13,7 @@ questions:
       text:
         en: "How do permission classes work in DRF? Compare IsAuthenticated and DjangoModelPermissions."
         ru: "Как работают permission classes в DRF? Сравните IsAuthenticated и DjangoModelPermissions."
-      code: |
-        from rest_framework.permissions import IsAuthenticated
-
-        class ArticleViewSet(viewsets.ModelViewSet):
-            permission_classes = [IsAuthenticated]
+      code: null
     follow_ups:
       en:
         - "How do you implement object-level permissions?"
@@ -38,13 +34,7 @@ questions:
       text:
         en: "What is throttling in DRF? How do you rate-limit API clients?"
         ru: "Что такое throttling в DRF? Как ограничить частоту запросов клиентов API?"
-      code: |
-        REST_FRAMEWORK = {
-            "DEFAULT_THROTTLE_CLASSES": [
-                "rest_framework.throttling.UserRateThrottle",
-            ],
-            "DEFAULT_THROTTLE_RATES": {"user": "100/hour"},
-        }
+      code: null
     follow_ups:
       en:
         - "What HTTP status is returned when throttled?"
@@ -65,14 +55,7 @@ questions:
       text:
         en: "How do nested serializers represent related objects in DRF?"
         ru: "Как nested serializers представляют связанные объекты в DRF?"
-      code: |
-        class CommentSerializer(serializers.ModelSerializer):
-            class Meta:
-                model = Comment
-                fields = ["id", "text"]
-
-        class ArticleSerializer(serializers.ModelSerializer):
-            comments = CommentSerializer(many=True, read_only=True)
+      code: null
     follow_ups:
       en:
         - "What is the writable nested serializer challenge?"
@@ -93,12 +76,7 @@ questions:
       text:
         en: "How do you filter querysets in DRF? What does django-filter integration provide?"
         ru: "Как фильтровать queryset в DRF? Что даёт интеграция django-filter?"
-      code: |
-        from django_filters.rest_framework import DjangoFilterBackend
-
-        class ArticleViewSet(viewsets.ModelViewSet):
-            filter_backends = [DjangoFilterBackend]
-            filterset_fields = ["status", "author"]
+      code: null
     follow_ups:
       en:
         - "What is SearchFilter used for?"

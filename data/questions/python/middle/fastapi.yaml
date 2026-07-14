@@ -13,13 +13,7 @@ questions:
       text:
         en: "How do FastAPI dependencies with yield work? Why are they useful for database sessions?"
         ru: "Как работают зависимости FastAPI с yield? Зачем они нужны для сессий БД?"
-      code: |
-        async def get_db():
-            db = SessionLocal()
-            try:
-                yield db
-            finally:
-                db.close()
+      code: null
     follow_ups:
       en:
         - "What runs after the response is sent?"
@@ -40,14 +34,7 @@ questions:
       text:
         en: "What is ASGI middleware in FastAPI? How do you configure CORS?"
         ru: "Что такое ASGI middleware в FastAPI? Как настроить CORS?"
-      code: |
-        from fastapi.middleware.cors import CORSMiddleware
-
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["https://example.com"],
-            allow_methods=["*"],
-        )
+      code: null
     follow_ups:
       en:
         - "In what order does middleware wrap the application?"
@@ -68,13 +55,7 @@ questions:
       text:
         en: "How do you register global exception handlers in FastAPI?"
         ru: "Как зарегистрировать глобальные обработчики исключений в FastAPI?"
-      code: |
-        from fastapi import Request
-        from fastapi.responses import JSONResponse
-
-        @app.exception_handler(ValueError)
-        async def value_error_handler(request: Request, exc: ValueError):
-            return JSONResponse(status_code=400, content={"detail": str(exc)})
+      code: null
     follow_ups:
       en:
         - "How does this differ from raising HTTPException in each route?"
@@ -95,12 +76,7 @@ questions:
       text:
         en: "What are BackgroundTasks in FastAPI? When should you use them vs Celery?"
         ru: "Что такое BackgroundTasks в FastAPI? Когда использовать их вместо Celery?"
-      code: |
-        from fastapi import BackgroundTasks
-
-        @app.post("/send-email")
-        async def send_email(background_tasks: BackgroundTasks):
-            background_tasks.add_task(send_notification, "user@example.com")
+      code: null
     follow_ups:
       en:
         - "Do background tasks run after the response is returned?"

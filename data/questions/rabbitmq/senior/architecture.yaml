@@ -19,21 +19,7 @@ questions:
       ru: 'Как работает кластеризация RabbitMQ? Объясните различные стратегии высокой доступности: классические зеркалируемые
         очереди (HA policy) против quorum queues (на основе Raft). В чём разница в надёжности данных, производительности и
         поведении при отказе?'
-    code: '# HA policy for mirrored queues (deprecated but still used)
-
-      rabbitmqctl set_policy ha-all "^ha\." ''{"ha-mode":"all","ha-sync-mode":"automatic"}''
-
-
-      # Quorum queue (recommended for HA)
-
-      args = {''x-queue-type'': ''quorum''}
-
-      channel.queue_declare(queue=''quorum_queue'', durable=True, arguments=args)
-
-
-      # Cluster nodes: all nodes know about exchanges, bindings, but queues live on one node (unless mirrored/quorum)
-
-      '
+    code: null
   follow_ups:
     en:
     - How many nodes needed for a quorum queue?
@@ -64,23 +50,7 @@ questions:
         time-based retention, offset tracking, super-streams, and use cases.'
       ru: 'Что такое RabbitMQ Streams? Чем они отличаются от классических очередей? Объясните возможности потоков: недеструктивное
         потребление, удержание по времени, отслеживание офсетов, супер-потоки и сценарии использования.'
-    code: '# Declare a stream (via plugin or client)
-
-      # RabbitMQ 3.9+ with rabbitmq_stream plugin
-
-
-      args = {''x-queue-type'': ''stream'', ''x-max-length-bytes'': 10_000_000_000, ''x-stream-max-segment-size-bytes'': 500_000_000}
-
-      channel.queue_declare(queue=''my_stream'', durable=True, arguments=args)
-
-
-      # Consume from a specific offset
-
-      # offset: first, last, next, or numeric
-
-      # Not applicable with basic.consume (stream uses special protocol)
-
-      '
+    code: null
   follow_ups:
     en:
     - How do streams compare with Kafka?
@@ -112,27 +82,7 @@ questions:
         moving messages between clusters? What is federation for? Explain the use of rabbitmqadmin.'
       ru: 'Назовите важные плагины RabbitMQ: management, shovel, federation, delayed message exchange. Как использовать shovel
         для перемещения сообщений между кластерами? Для чего нужна федерация? Объясните использование rabbitmqadmin.'
-    code: '# Enable plugins
-
-      rabbitmq-plugins enable rabbitmq_management rabbitmq_shovel rabbitmq_federation
-
-
-      # Shovel config (dynamic shovel via runtime parameter)
-
-      rabbitmqctl set_parameter shovel my-shovel ''{"src-uri":"amqp://src","dest-uri":"amqp://dest","src-queue":"src-queue","dest-exchange":"dest-exchange"}''
-
-
-      # Delayed Message Exchange plugin (not built-in, install separately)
-
-      args = {''x-delayed-type'': ''direct''}
-
-      channel.exchange_declare(''delayed_exchange'', ''x-delayed-message'', arguments=args)
-
-      # Publish with delay
-
-      props = pika.BasicProperties(headers={''x-delay'': 5000})
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the difference between shovel and federation?

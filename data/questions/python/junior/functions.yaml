@@ -36,9 +36,7 @@ questions:
       text:
         en: "What are lambda functions in Python? When should you use them vs regular named functions?"
         ru: "Что такое лямбда-функции в Python? Когда их использовать вместо обычных именованных функций?"
-      code: |
-        square = lambda x: x ** 2
-        squares = list(map(lambda x: x ** 2, [1, 2, 3]))
+      code: null
     follow_ups:
       en:
         - "What are the limitations of lambda functions?"
@@ -60,15 +58,7 @@ questions:
       text:
         en: "Explain Python's LEGB scoping rule. How does it affect variable lookup?"
         ru: "Объясните правило областей видимости LEGB в Python. Как оно влияет на поиск переменных?"
-      code: |
-        x = "global"
-        def outer():
-            x = "enclosing"
-            def inner():
-                x = "local"
-                print(x)
-            inner()
-        outer()
+      code: null
     follow_ups:
       en:
         - "What do 'global' and 'nonlocal' keywords do?"
@@ -90,13 +80,7 @@ questions:
       text:
         en: "What is the problem with mutable default arguments in Python? Why can it lead to bugs?"
         ru: "В чём проблема изменяемых аргументов по умолчанию в Python? Почему это может приводить к ошибкам?"
-      code: |
-        def add_item(item, items=[]):
-            items.append(item)
-            return items
-
-        print(add_item(1))  # [1]
-        print(add_item(2))  # [1, 2] — unexpected!
+      code: null
     follow_ups:
       en:
         - "How can you safely use mutable defaults?"
@@ -139,19 +123,7 @@ questions:
       text:
         en: "What does it mean that functions are first-class citizens in Python? Give examples."
         ru: "Что означает, что функции в Python являются объектами первого класса? Приведите примеры."
-      code: |
-        def greet(name):
-            return f"Hello, {name}!"
-
-        # Assign to variable
-        say_hello = greet
-        print(say_hello("World"))
-
-        # Pass as argument
-        def apply(func, value):
-            return func(value)
-
-        print(apply(greet, "Python"))
+      code: null
     follow_ups:
       en:
         - "What is a higher-order function?"

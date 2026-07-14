@@ -13,17 +13,7 @@ questions:
       text:
         en: "How do generics work in Python? Explain TypeVar, Generic, and bounded type variables."
         ru: "Как работают дженерики в Python? Объясните TypeVar, Generic и ограниченные типовые переменные."
-      code: |
-        from typing import TypeVar, Generic
-
-        T = TypeVar('T')
-
-        class Stack(Generic[T]):
-            def push(self, item: T) -> None: ...
-            def pop(self) -> T: ...
-
-        Number = TypeVar('Number', int, float)
-        def add(a: Number, b: Number) -> Number: ...
+      code: null
     follow_ups:
       en:
         - "What is the difference between TypeVar with and without constraints?"
@@ -47,20 +37,7 @@ questions:
       text:
         en: "What are Protocols in Python? How do they enable structural subtyping?"
         ru: "Что такое протоколы (Protocols) в Python? Как они реализуют структурную типизацию?"
-      code: |
-        from typing import Protocol
-
-        class Drawable(Protocol):
-            def draw(self) -> None: ...
-
-        def render(obj: Drawable) -> None:
-            obj.draw()
-
-        class Circle:
-            def draw(self) -> None:
-                print("Drawing circle")
-
-        render(Circle())  # OK — structurally matches Drawable
+      code: null
     follow_ups:
       en:
         - "How does Protocol differ from ABC?"
@@ -84,19 +61,7 @@ questions:
       text:
         en: "How does @typing.overload work? How does it differ from overloading in other languages?"
         ru: "Как работает @typing.overload? Чем он отличается от перегрузки в других языках?"
-      code: |
-        from typing import overload
-
-        @overload
-        def process(value: int) -> str: ...
-
-        @overload
-        def process(value: list[int]) -> list[str]: ...
-
-        def process(value: int | list[int]) -> str | list[str]:
-            if isinstance(value, list):
-                return [str(x) for x in value]
-            return str(value)
+      code: null
     follow_ups:
       en:
         - "Why doesn't Python have true method overloading?"

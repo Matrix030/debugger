@@ -13,14 +13,7 @@ questions:
       text:
         en: "What are metaclasses in Python? How do you create one and when would you use them?"
         ru: "Что такое метаклассы в Python? Как создать метакласс и когда их использовать?"
-      code: |
-        class Meta(type):
-            def __new__(mcs, name, bases, namespace):
-                namespace['created_at'] = 'generated'
-                return super().__new__(mcs, name, bases, namespace)
-
-        class MyClass(metaclass=Meta):
-            pass
+      code: null
     follow_ups:
       en:
         - "How does type() work as a metaclass?"
@@ -44,21 +37,7 @@ questions:
       text:
         en: "What are descriptors in Python? How do __get__, __set__, and __delete__ work?"
         ru: "Что такое дескрипторы в Python? Как работают __get__, __set__ и __delete__?"
-      code: |
-        class ValidatedAttribute:
-            def __init__(self, validator):
-                self.validator = validator
-                self.data = {}
-
-            def __get__(self, obj, objtype=None):
-                if obj is None:
-                    return self
-                return self.data.get(id(obj))
-
-            def __set__(self, obj, value):
-                if not self.validator(value):
-                    raise ValueError(f"Invalid value: {value}")
-                self.data[id(obj)] = value
+      code: null
     follow_ups:
       en:
         - "What is the difference between a data descriptor and non-data descriptor?"
@@ -82,23 +61,7 @@ questions:
       text:
         en: "What is the difference between a function decorator and a class-based decorator? When would you use each?"
         ru: "В чём разница между декоратором-функцией и декоратором-классом? Когда использовать каждый из них?"
-      code: |
-        # Function decorator
-        def logged(func):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                print(f"Calling {func.__name__}")
-                return func(*args, **kwargs)
-            return wrapper
-
-        # Class decorator
-        class Logged:
-            def __init__(self, func):
-                self.func = func
-
-            def __call__(self, *args, **kwargs):
-                print(f"Calling {self.func.__name__}")
-                return self.func(*args, **kwargs)
+      code: null
     follow_ups:
       en:
         - "How do you create a decorator with arguments?"

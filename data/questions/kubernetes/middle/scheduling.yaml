@@ -18,12 +18,7 @@ questions:
         taints and tolerations. What is the role of priorityClassName and preemption?
       ru: Как работает планирование подов в Kubernetes? Объясните nodeSelector, nodeAffinity (required/preferred), podAffinity/antiaffinity,
         taints и tolerations. Какова роль priorityClassName и вытеснения (preemption)?
-    code: "# Node affinity (hard requirement)\naffinity:\n  nodeAffinity:\n    requiredDuringSchedulingIgnoredDuringExecution:\n\
-      \      nodeSelectorTerms:\n      - matchExpressions:\n        - key: disktype\n          operator: In\n          values:\
-      \ [ssd]\n\n# Taint on node\nkubectl taint nodes node1 key=value:NoSchedule\n\n# Toleration on pod\ntolerations:\n- key:\
-      \ key\n  operator: Equal\n  value: value\n  effect: NoSchedule\n\n# Pod anti-affinity (avoid co-location)\npodAntiAffinity:\n\
-      \  preferredDuringSchedulingIgnoredDuringExecution:\n  - podAffinityTerm:\n      labelSelector: {matchLabels: {app:\
-      \ web}}\n      topologyKey: kubernetes.io/hostname\n"
+    code: null
   follow_ups:
     en:
     - What is the difference between requiredDuringScheduling and preferredDuringScheduling?
@@ -54,11 +49,7 @@ questions:
       ru: 'Объясните автоматическое масштабирование в Kubernetes: Horizontal Pod Autoscaler (HPA) на основе CPU/памяти и пользовательских
         метрик. Что такое Vertical Pod Autoscaler (VPA)? Как работает Cluster Autoscaler? Каковы предварительные требования
         (metrics-server)?'
-    code: "# HPA based on CPU\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nspec:\n  scaleTargetRef: {apiVersion:\
-      \ apps/v1, kind: Deployment, name: myapp}\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n   \
-      \ resource: {name: cpu, target: {type: Utilization, averageUtilization: 50}}\n\n# HPA with custom metric (Prometheus\
-      \ adapter)\n- type: Pods\n  pods: {metric: {name: http_requests_per_sec}, target: {type: AverageValue, averageValue:\
-      \ 100}}\n\n# Cluster Autoscaler (cloud provider)\n# Adds/removes nodes based on pending pods\n"
+    code: null
   follow_ups:
     en:
     - What is the difference between averageUtilization and averageValue?

@@ -262,13 +262,13 @@ python:
     Kafka Client Basics:
     - What are the main Python libraries for Kafka? Compare kafka-python, confluent-kafka-python, and aiokafka (pros, cons,
       performance, use cases).
-    - Write a Kafka producer in Python using confluent-kafka-python with JSON serialization, error handling, and callback.
-      How to send messages asynchronously?
+    - What is the structure of a Kafka producer in confluent-kafka-python? Explain JSON serialization,
+      delivery callbacks, and the purpose of poll() and flush().
     RabbitMQ Client Basics:
     - What are the main Python client libraries for RabbitMQ? Compare pika, aio-pika, and kombu. Which one is suitable for
       sync, async, and production use?
-    - Write a RabbitMQ producer in Python using pika with mandatory flag and publisher confirms (asynchronous). Show how to
-      handle confirmation and return callbacks. Include message persistence and exchange declaration.
+    - What is the structure of a RabbitMQ producer in pika? Explain publisher confirms, mandatory flag,
+      message persistence, and exchange declaration.
   middle:
     Architecture:
     - Explain the SOLID principles. How do they apply to Python development?
@@ -358,23 +358,23 @@ python:
     - What are Literal, TypedDict, and Final types in Python? How do they improve type safety?
     - What tools does typing provide for type narrowing and debugging type hints?
     Kafka Client Development:
-    - Implement a Kafka consumer in Python (confluent-kafka) reading messages from a topic with manual offset commit. Explain
-      auto commit vs manual commit, synchronous vs asynchronous commit.
-    - How to consume Kafka messages asynchronously using aiokafka inside a FastAPI application? Show proper startup/shutdown,
-      concurrency control, and backpressure handling.
+    - Compare auto commit vs manual offset commit in Kafka consumers. Explain synchronous vs asynchronous
+      commit and when to use each approach.
+    - How does an async Kafka consumer work with aiokafka inside a FastAPI application? Explain startup/shutdown
+      lifecycle, concurrency control, and backpressure handling.
     - How to handle message processing failures and retries in Python Kafka consumer? Discuss dead-letter queue pattern, poison
       pills, and exponential backoff. How to implement custom retry with commit control?
     - 'What metrics and tools are essential for monitoring Python Kafka applications? How to measure consumer lag, producer
       throughput, errors. How to debug common issues: ''message too large'', ''broker not available'', ''rebalance timeout''.'
     RabbitMQ Client Development:
-    - Implement a RabbitMQ consumer using pika with manual acknowledgements, QoS prefetch count=1, and basic_cancel. Show
-      how to handle graceful shutdown and requeue on failure.
-    - Create an async RabbitMQ consumer using aio-pika with robust connection, manual ack, and backpressure handling. Show
-      integration with FastAPI startup/shutdown events. How to limit concurrent message processing?
+    - What is the difference between basic_ack, basic_nack, and basic_reject in RabbitMQ? Explain
+      how QoS prefetch count, manual acknowledgements, and graceful shutdown work in a pika consumer.
+    - How does an async RabbitMQ consumer work with aio-pika? Explain the role of connect_robust,
+      manual ack, backpressure handling via Semaphore, and FastAPI startup/shutdown integration.
     - How to handle RabbitMQ connection failures and reconnections in Python? Discuss heartbeat settings, connection recovery
-      strategies (exponential backoff, retry limits), and channel recovery. Show a robust publisher with automatic reconnect.
-    - How to handle message serialization in RabbitMQ Python clients? Compare JSON, MessagePack, Avro, and Protobuf. Show
-      an example of using JSON with content_type header and custom serializer for complex objects.
+      strategies (exponential backoff, retry limits), and channel recovery.
+    - How to handle message serialization in RabbitMQ Python clients? Compare JSON, MessagePack, Avro, and Protobuf.
+      How does the content_type header help the consumer choose the correct deserializer?
   senior:
     System Design:
     - How do consensus algorithms like Raft and Paxos work? When would you need them in a Python system?
@@ -422,19 +422,19 @@ python:
     - What are the key security considerations for REST APIs and GraphQL in Python?
     - What are SSRF, insecure deserialization, and XXE vulnerabilities? How do they apply to Python?
     Kafka Client Production:
-    - How to achieve exactly-once semantics in Python with confluent-kafka? Implement idempotent producer and transactional
-      producer/consumer. What are the configuration requirements?
+    - How does exactly-once semantics work in Kafka with confluent-kafka-python? Explain the difference between
+      idempotent producer and transactional producer/consumer. What configuration is required?
     - How to optimize Python Kafka producer and consumer for maximum throughput and low latency? Discuss batching (batch.size,
       linger.ms), compression (gzip, snappy, lz4, zstd), fetch parameters, and multi-threading vs multi-processing.
-    - How to use Avro serialization with Kafka in Python? Describe integration with Confluent Schema Registry. Show producer
-      with AvroSerializer and consumer with AvroDeserializer. How to handle schema evolution (backward/forward compatibility)?
-    - 'How to parallelize Kafka message processing in Python using multiprocessing? Show a pattern: one consumer process that
-      distributes messages to worker processes via queue. Discuss rebalancing, commit coordination, and handling backpressure.'
+    - How does Avro serialization integrate with Kafka in Python? Explain the role of Confluent Schema Registry,
+      AvroSerializer, AvroDeserializer, and schema evolution.
+    - What patterns exist for parallel Kafka message processing in Python? Compare single consumer + worker
+      processes vs process-per-partition. Discuss rebalancing, commit coordination, and backpressure.
     RabbitMQ Client Production:
-    - 'Implement a classic RPC pattern over RabbitMQ in Python: client sends a request with correlation_id and reply_to queue,
-      server processes and sends response. Show timeout handling and concurrent requests.'
-    - How to implement a retry pattern with exponential backoff in RabbitMQ using Python (pika)? Use dead-letter exchange
-      with delayed retry queue. Show configuration of main queue, retry queue with TTL, and message flow.
+    - How does the RPC pattern work over RabbitMQ? Explain the roles of correlation_id, reply_to queue,
+      timeout handling, and concurrent requests.
+    - How does a retry pattern with dead-letter exchange (DLX) work in RabbitMQ? Explain the configuration of
+      main queue, retry queue with TTL, and the message flow between them.
 system-design:
   middle:
     System Design:

@@ -13,17 +13,7 @@ questions:
       text:
         en: "Explain the try/except/else/finally blocks in Python. What is the purpose of each?"
         ru: "Объясните блоки try/except/else/finally в Python. Каково назначение каждого из них?"
-      code: |
-        try:
-            result = risky_operation()
-        except ValueError as e:
-            print(f"Value error: {e}")
-        except (TypeError, RuntimeError) as e:
-            print(f"Type or runtime error: {e}")
-        else:
-            print(f"Success: {result}")
-        finally:
-            cleanup()
+      code: null
     follow_ups:
       en:
         - "When does the 'else' block execute?"
@@ -71,14 +61,7 @@ questions:
       text:
         en: "How do you raise and create custom exceptions in Python?"
         ru: "Как создавать и выбрасывать пользовательские исключения в Python?"
-      code: |
-        class ValidationError(Exception):
-            """Raised when validation fails."""
-            pass
-
-        def validate_age(age: int):
-            if age < 0:
-                raise ValidationError("Age cannot be negative")
+      code: null
     follow_ups:
       en:
         - "How do you chain exceptions with 'raise from'?"

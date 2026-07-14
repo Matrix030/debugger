@@ -19,11 +19,7 @@ questions:
       ru: 'Сравните исполнители Airflow: SequentialExecutor, LocalExecutor, CeleryExecutor, KubernetesExecutor. Как CeleryExecutor
         распределяет задачи? Каковы плюсы/минусы KubernetesExecutor по сравнению с CeleryExecutor? Когда использовать LocalExecutor
         в продакшене?'
-    code: "# airflow.cfg\nexecutor = CeleryExecutor\ncelery_app_name = airflow.executors.celery_executor\n\n# For KubernetesExecutor:\
-      \ optional pod template\nexecutor = KubernetesExecutor\npod_template_file = /opt/airflow/pod_template.yaml\n\n# Resource\
-      \ limits per task (KubernetesExecutor or CeleryKubernetes)\nwith DAG(...) as dag:\n    task = PythonOperator(\n    \
-      \    task_id='heavy_task',\n        python_callable=run_model,\n        executor_config={\"KubernetesExecutor\": {\"\
-      requests\": {\"memory\": \"8Gi\"}}}\n    )\n"
+    code: null
   follow_ups:
     en:
     - How to set up Celery with Redis or RabbitMQ as broker?

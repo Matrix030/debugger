@@ -17,23 +17,7 @@ questions:
         compaction? What is the difference between deletion and compaction?
       ru: Как Kafka хранит сообщения на диске? Что такое сегменты лога, rolling, политики удержания (время, размер) и compaction?
         В чём разница между удалением и компакцией?
-    code: '# Retention configuration
-
-      log.retention.hours=168  # 7 days
-
-      log.retention.bytes=1073741824  # 1GB per partition
-
-
-      # Compaction: keep latest value per key
-
-      log.cleanup.policy=compact  # for changelog topics
-
-
-      # Deletion: remove old records
-
-      log.cleanup.policy=delete
-
-      '
+    code: null
   follow_ups:
     en:
     - What is a segment? Why not one big file?

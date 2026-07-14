@@ -37,12 +37,7 @@ questions:
       text:
         en: "What advanced data types does PostgreSQL support? How do you use JSONB for semi-structured data?"
         ru: "Какие продвинутые типы данных поддерживает PostgreSQL? Как использовать JSONB для полуструктурированных данных?"
-      code: |
-        CREATE TABLE events (
-            id SERIAL PRIMARY KEY,
-            payload JSONB
-        );
-        SELECT payload->>'user_id' as uid FROM events WHERE payload @> '{"type": "click"}';
+      code: null
     follow_ups:
       en:
         - "How do you index JSONB data (GIN indexes)?"

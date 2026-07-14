@@ -3,12 +3,15 @@
 """faster-whisper implementation of :class:`~app.ai.speech_transcriber.SpeechTranscriber`."""
 
 import asyncio
+import logging
 
 from faster_whisper import WhisperModel
 import numpy as np
 import numpy.typing as npt
 
 from app.shared.locales import normalize_locale
+
+logger = logging.getLogger(__name__)
 
 
 class FasterWhisperTranscriber:
@@ -39,12 +42,20 @@ class FasterWhisperTranscriber:
         language = normalize_locale(locale)
 
         def _transcribe() -> str:
-            segments, _info = self._model.transcribe(
+            segments, info = self._model.transcribe(
                 audio,
                 language=language,
                 task="transcribe",
-                vad_filter=True,
+                vad_filter=False,
             )
-            return "".join(segment.text for segment in segments).strip()
+            segment_list = list(segments)
+            result = "".join((segment.text or "") for segment in segment_list).strip()
+            logger.info(
+                "Whisper transcript: language=%s segments=%d result=%r",
+                info.language,
+                len(segment_list),
+                result,
+            )
+            return result
 
         return await asyncio.to_thread(_transcribe)

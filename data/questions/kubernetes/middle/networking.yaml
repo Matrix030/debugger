@@ -18,9 +18,7 @@ questions:
         How does Ingress differ from LoadBalancer? Describe kube-proxy modes (iptables, IPVS).'
       ru: 'Объясните типы Service в Kubernetes: ClusterIP, NodePort, LoadBalancer, ExternalName. Что такое headless service?
         Чем Ingress отличается от LoadBalancer? Опишите режимы kube-proxy (iptables, IPVS).'
-    code: "# Headless service (no cluster IP)\nspec:\n  clusterIP: None\n  selector:\n    app: myapp\n\n# Ingress example\n\
-      apiVersion: networking.k8s.io/v1\nkind: Ingress\nspec:\n  rules:\n  - host: example.com\n    http:\n      paths:\n \
-      \     - path: /api\n        backend:\n          service:\n            name: api-service\n            port: 80\n"
+    code: null
   follow_ups:
     en:
     - How to expose a TCP/UDP service via Ingress (e.g., database)?
@@ -50,11 +48,7 @@ questions:
         volume modes (Filesystem, Block). What are the reclaim policies (Retain, Delete, Recycle)? How to use CSI drivers?
       ru: Как работает хранение в Kubernetes? Объясните PersistentVolume (PV), PersistentVolumeClaim (PVC), StorageClass и
         режимы томов (Filesystem, Block). Что такое политики возврата (Retain, Delete, Recycle)? Как использовать CSI драйверы?
-    code: "# StorageClass for dynamic provisioning\napiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata: {name: fast}\n\
-      provisioner: kubernetes.io/aws-ebs\nparameters: {type: gp3}\n\n# PVC requesting storage\nkind: PersistentVolumeClaim\n\
-      spec:\n  accessModes: [ReadWriteOnce]\n  resources: {requests: {storage: 10Gi}}\n  storageClassName: fast\n\n# Pod using\
-      \ PVC\nspec:\n  volumes:\n  - name: data\n    persistentVolumeClaim: {claimName: mypvc}\n  containers:\n  - volumeMounts:\
-      \ [{mountPath: /data, name: data}]\n"
+    code: null
   follow_ups:
     en:
     - What is the difference between ReadWriteOnce, ReadOnlyMany, ReadWriteMany?

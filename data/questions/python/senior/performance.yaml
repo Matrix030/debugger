@@ -133,12 +133,7 @@ questions:
       text:
         en: "How does functools.lru_cache and functools.cache work? When should you use caching to optimize Python code?"
         ru: "Как работают functools.lru_cache и functools.cache? Когда использовать кеширование для оптимизации Python-кода?"
-      code: |
-        from functools import lru_cache
-
-        @lru_cache(maxsize=128)
-        def expensive_computation(n: int) -> int:
-            return n ** n
+      code: null
     follow_ups:
       en:
         - "What are the memory implications of unbounded caching?"

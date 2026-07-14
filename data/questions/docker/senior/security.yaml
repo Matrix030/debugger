@@ -19,28 +19,7 @@ questions:
       ru: 'Каковы лучшие практики безопасности Docker? Объясните: запуск от non-root пользователя, удаление возможностей Linux
         (capabilities), профили seccomp, AppArmor/SELinux и rootless Docker. Как сканировать образы на уязвимости (например,
         Trivy, Docker Scout)?'
-    code: '# Dockerfile: create non-root user
-
-      FROM python:3.11
-
-      RUN useradd -m appuser
-
-      USER appuser
-
-
-      # Run container with dropped capabilities
-
-      docker run --cap-drop=ALL --cap-add=NET_ADMIN myapp
-
-
-      # Seccomp profile (disable certain syscalls)
-
-      docker run --security-opt seccomp=/path/to/profile.json myapp
-
-
-      # Rootless Docker installation (daemon runs without root)
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the difference between --privileged and adding specific capabilities?

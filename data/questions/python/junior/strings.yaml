@@ -13,12 +13,7 @@ questions:
       text:
         en: "What are the different ways to format strings in Python? Compare f-strings, .format(), and %-formatting."
         ru: "Какие существуют способы форматирования строк в Python? Сравните f-строки, .format() и %-форматирование."
-      code: |
-        name, age = "Alice", 30
-        # Compare these approaches
-        f"Hello, {name} is {age}"
-        "{} is {}".format(name, age)
-        "%s is %d" % (name, age)
+      code: null
     follow_ups:
       en:
         - "Why are f-strings preferred in modern Python?"
@@ -40,9 +35,7 @@ questions:
       text:
         en: "Are strings mutable or immutable in Python? How does this affect common string operations?"
         ru: "Строки изменяемы или неизменяемы в Python? Как это влияет на обычные операции со строками?"
-      code: |
-        s = "hello"
-        s_upper = s.upper()  # What does s contain after this?
+      code: null
     follow_ups:
       en:
         - "If strings are immutable, how does s += ' world' work?"
@@ -63,13 +56,7 @@ questions:
       text:
         en: "How does string slicing work in Python? Explain negative indexing and step values."
         ru: "Как работают срезы строк в Python? Объясните отрицательную индексацию и значения шага."
-      code: |
-        s = "Python"
-        # What do these produce?
-        s[0:3]    # ???
-        s[-3:]    # ???
-        s[::-1]   # ???
-        s[::2]    # ???
+      code: null
     follow_ups:
       en:
         - "What is the difference between s[0] and s[0:1]?"
@@ -116,9 +103,7 @@ questions:
       text:
         en: "What are raw strings in Python? When would you use them?"
         ru: "Что такое сырые строки (raw strings) в Python? Когда их использовать?"
-      code: |
-        normal = "C:\Users\name"
-        raw = r"C:\Users\name"
+      code: null
     follow_ups:
       en:
         - "How do raw strings help with regular expressions?"

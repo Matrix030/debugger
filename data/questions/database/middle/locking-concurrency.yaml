@@ -34,11 +34,7 @@ questions:
       text:
         en: "What does SELECT FOR UPDATE do? When would you use it?"
         ru: "Что делает SELECT FOR UPDATE? Когда его использовать?"
-      code: |
-        BEGIN;
-        SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;
-        UPDATE accounts SET balance = balance - 100 WHERE id = 1;
-        COMMIT;
+      code: null
     follow_ups:
       en:
         - "What is SELECT FOR UPDATE SKIP LOCKED?"
@@ -80,10 +76,7 @@ questions:
       text:
         en: "Compare optimistic and pessimistic locking. How is optimistic locking implemented with a version column?"
         ru: "Сравните optimistic и pessimistic locking. Как optimistic locking реализуют через version column?"
-      code: |
-        UPDATE products
-        SET stock = stock - 1, version = version + 1
-        WHERE id = 42 AND version = 5;
+      code: null
     follow_ups:
       en:
         - "When prefer optimistic over pessimistic?"

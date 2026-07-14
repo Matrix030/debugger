@@ -55,12 +55,7 @@ questions:
       text:
         en: "How does pytest improve plain assert statements? What happens on failure?"
         ru: "Как pytest улучшает обычные assert? Что происходит при падении теста?"
-      code: |
-        def add(a, b):
-            return a + b
-
-        def test_add():
-            assert add(2, 3) == 5
+      code: null
     follow_ups:
       en:
         - "What is assertion introspection?"
@@ -81,15 +76,7 @@ questions:
       text:
         en: "What is a pytest fixture? How do you declare and use one?"
         ru: "Что такое фикстура pytest? Как её объявить и использовать?"
-      code: |
-        import pytest
-
-        @pytest.fixture
-        def sample_user():
-            return {"id": 1, "name": "Alice"}
-
-        def test_user_name(sample_user):
-            assert sample_user["name"] == "Alice"
+      code: null
     follow_ups:
       en:
         - "What is the default scope of a fixture?"
@@ -110,12 +97,7 @@ questions:
       text:
         en: "What does @pytest.mark.parametrize do? Give an example testing multiple inputs."
         ru: "Что делает @pytest.mark.parametrize? Приведите пример проверки нескольких входов."
-      code: |
-        import pytest
-
-        @pytest.mark.parametrize("a,b,expected", [(1, 2, 3), (0, 0, 0), (-1, 1, 0)])
-        def test_add(a, b, expected):
-            assert a + b == expected
+      code: null
     follow_ups:
       en:
         - "How many test cases does parametrize generate?"
@@ -157,15 +139,7 @@ questions:
       text:
         en: "How do you test that code raises an expected exception in pytest?"
         ru: "Как в pytest проверить, что код выбрасывает ожидаемое исключение?"
-      code: |
-        import pytest
-
-        def divide(a, b):
-            return a / b
-
-        def test_divide_by_zero():
-            with pytest.raises(ZeroDivisionError):
-                divide(1, 0)
+      code: null
     follow_ups:
       en:
         - "How do you match the exception message with pytest.raises?"

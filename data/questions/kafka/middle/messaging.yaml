@@ -17,19 +17,7 @@ questions:
         semantics (EOS) in Kafka?
       ru: Какие семантики доставки предоставляет Kafka (at-most-once, at-least-once, exactly-once)? Как достичь exactly-once
         semantics (EOS) в Kafka?
-    code: '# Exactly-once with idempotent producer + transactions
-
-      producer.init_transactions()
-
-      producer.begin_transaction()
-
-      producer.send(''topic1'', value)
-
-      producer.send(''topic2'', value)
-
-      producer.commit_transaction()
-
-      '
+    code: null
   follow_ups:
     en:
     - What is idempotent producer?
@@ -60,16 +48,7 @@ questions:
         vs eager rebalancing? How to avoid 'rebalance storm'?
       ru: Что такое ребалансировка consumer group? Опишите протокол ребалансировки (JoinGroup, SyncGroup). В чём разница между
         cooperative и eager ребалансировкой? Как избежать 'rebalance storm'?
-    code: '# Eager rebalancing: all consumers revoke partitions, pause consumption
-
-      # Cooperative rebalancing (incremental): only some partitions move
-
-
-      # Session.timeout.ms and max.poll.interval.ms
-
-      # If processing too long -> consumer leaves group -> rebalance
-
-      '
+    code: null
   follow_ups:
     en:
     - What happens if a consumer dies without leaving the group?
@@ -98,23 +77,7 @@ questions:
         latency? What is min.insync.replicas?
       ru: Что такое параметр acks у продюсера Kafka? Объясните acks=0, acks=1, acks=all. Как это влияет на сохранность и задержку?
         Что такое min.insync.replicas?
-    code: '# Producer config
-
-      acks=0         # fire-and-forget
-
-      acks=1         # leader acknowledgement only
-
-      acks=all       # wait for ISR replicas
-
-
-      # Broker config
-
-      min.insync.replicas=2  # need at least 2 replicas in ISR
-
-
-      # Guarantee: with acks=all and min.insync.replicas=2 -> data written to at least 2 brokers
-
-      '
+    code: null
   follow_ups:
     en:
     - What happens if min.insync.replicas cannot be satisfied?

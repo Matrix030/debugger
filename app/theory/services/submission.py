@@ -314,8 +314,15 @@ class TheorySubmissionService:
         Returns:
             Final transcript text (may be empty).
         """
+        logger.info(
+            "[AudioAnswer] Starting transcription for interview=%s question=%s round=%d",
+            interview_id,
+            question_id,
+            round_num,
+        )
         samples = wav_bytes_to_float32(wav_bytes)
         transcript = await transcriber.transcribe(samples, locale)
+        logger.info("[AudioAnswer] Transcription result: %r", transcript)
         section = self._uow.theory_sections.get_aggregate(interview_id)
         if section is None:
             raise TheorySectionNotFoundError(interview_id)
@@ -323,6 +330,7 @@ class TheorySubmissionService:
         updated = section.with_task_text(current.id, transcript)
         self._uow.theory_sections.save_aggregate(updated)
         self._uow.flush()
+        logger.info("[AudioAnswer] Persisted transcript to DB")
         return transcript
 
     def _schedule_last_follow_up_evaluation(
@@ -579,18 +587,27 @@ class TheorySubmissionService:
     ) -> AsyncIterator[InterviewEvent]:
         self.require_audio_answer_enabled()
         validate_wav_bytes(wav_bytes)
+        logger.info(
+            "[AudioAnswer] Starting audio submission for interview=%s question=%s",
+            interview_id,
+            question_id,
+        )
 
         ctx: TheorySubmissionContext | None = None
         async for item in self._open_submission(interview_id, question_id, ""):
             if isinstance(item, TheorySubmissionContext):
                 ctx = item
                 break
+            logger.info(
+                "[AudioAnswer] Yielding pre-context event: %s", type(item).__name__
+            )
             yield item
         if ctx is None:
+            logger.warning("[AudioAnswer] No submission context returned")
             return
 
         self._release_submission_write_lock()
-
+        logger.info("[AudioAnswer] Context opened, round=%d", ctx.round_num)
         yield AnswerSavedEvent()
 
         if ctx.round_num >= TheoryEvaluatorService.MAX_FOLLOW_UP_DEPTH:

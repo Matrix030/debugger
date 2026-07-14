@@ -90,7 +90,7 @@
              {% if question_voice_enabled %}data-question-voice-enabled="true"{% endif %}>
         <div class="interview-chat" id="chat-container">
             {% for answer in answers %}
-            {% if answer.answer_text is not none or (current_question and answer.id == current_question.id) %}
+            {% if answer.answer_text is not none or answer.answer_text == '' or (current_question and answer.id == current_question.id) %}
             <div class="chat-message question" data-question-id="{{ answer.question_id }}" data-round="{{ answer.round }}" data-answer-id="{{ answer.id }}">
                 <div class="chat-bubble question-bubble">
                     <div class="question-bubble-header">
@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            {% if answer.answer_text %}
+            {% if answer.answer_text is not none %}
             <div class="chat-message answer" data-question-id="{{ answer.question_id }}" data-round="{{ answer.round }}">
                 <div class="chat-bubble answer-bubble">
                     <strong>You:</strong> {{ answer.answer_text }}
@@ -332,6 +332,7 @@ window.grillkitCodingBootstrap = {
     }
 
     function handleWsMessage(data) {
+        console.log("[WS] handleWsMessage type:", data.type, "data:", data);
         switch (data.type) {
             case 'saved':
                 break;
@@ -342,10 +343,19 @@ window.grillkitCodingBootstrap = {
                 break;
 
             case 'transcript':
-                if (typeof window.grillkitUpdateAudioAnswerBubble === 'function') {
-                    window.grillkitUpdateAudioAnswerBubble(data.text);
+                if (!data.text) {
+                    showError('Speech not recognized. Please try again or type your answer.');
+                    if (typeof window.grillkitUpdateAudioAnswerBubble === 'function') {
+                        window.grillkitUpdateAudioAnswerBubble('[Not recognized]');
+                    } else {
+                        showAnswerBubbleWithText('[Not recognized]');
+                    }
                 } else {
-                    showAnswerBubbleWithText(data.text);
+                    if (typeof window.grillkitUpdateAudioAnswerBubble === 'function') {
+                        window.grillkitUpdateAudioAnswerBubble(data.text);
+                    } else {
+                        showAnswerBubbleWithText(data.text);
+                    }
                 }
                 break;
 

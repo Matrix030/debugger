@@ -220,6 +220,7 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) {
+                        console.log("[Audio] NDJSON stream done");
                         break;
                     }
                     buffer += decoder.decode(value, { stream: true });
@@ -230,15 +231,18 @@
                         if (!line) {
                             continue;
                         }
+                        console.log("[Audio] NDJSON line:", line);
                         dispatchInterviewEvent(JSON.parse(line));
                     }
                 }
 
                 const tail = buffer.trim();
                 if (tail) {
+                    console.log("[Audio] NDJSON tail:", tail);
                     dispatchInterviewEvent(JSON.parse(tail));
                 }
             } catch (err) {
+                console.error("[Audio] NDJSON stream error:", err);
                 throw new Error(
                     err && err.message ? err.message : "Audio answer stream failed"
                 );
@@ -246,7 +250,8 @@
         }
 
         function dispatchInterviewEvent(data) {
-            if (typeof window.grillkitHandleInterviewEvent === "function") {
+            console.log("[Audio] dispatchInterviewEvent:", data);
+            if (typeof window.grillkitHandleInterviewEvent === 'function') {
                 window.grillkitHandleInterviewEvent(data);
             }
         }

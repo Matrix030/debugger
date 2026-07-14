@@ -14,18 +14,11 @@ questions:
   - eos
   question:
     text:
-      en: How to achieve exactly-once semantics in Python with confluent-kafka? Implement idempotent producer and transactional
-        producer/consumer. What are the configuration requirements?
-      ru: Как достичь exactly-once семантики в Python с confluent-kafka? Реализуйте идемпотентный продюсер и транзакционный
-        продюсер/консьюмер. Какие требования к конфигурации?
-    code: "from confluent_kafka import Producer, Consumer\n\n# Idempotent producer\nproducer_conf = {\n    'bootstrap.servers':\
-      \ 'localhost:9092',\n    'enable.idempotence': True,\n    'acks': 'all',\n    'max.in.flight.requests.per.connection':\
-      \ 5   # must be <=5 with idempotence\n}\nproducer = Producer(producer_conf)\n\n# Transactional producer\ntxn_producer_conf\
-      \ = {\n    'bootstrap.servers': 'localhost:9092',\n    'enable.idempotence': True,\n    'transactional.id': 'unique-producer-id'\n\
-      }\ntxn_producer = Producer(txn_producer_conf)\ntxn_producer.init_transactions()\ntxn_producer.begin_transaction()\n\
-      txn_producer.produce('topic1', b'msg1')\ntxn_producer.produce('topic2', b'msg2')\ntxn_producer.commit_transaction()\n\
-      \n# Transactional consumer (isolation.level=read_committed)\nconsumer_conf = {\n    'bootstrap.servers': 'localhost:9092',\n\
-      \    'group.id': 'txn-group',\n    'isolation.level': 'read_committed'\n}\n"
+      en: How does exactly-once semantics work in Kafka with confluent-kafka-python? Explain the difference
+        between idempotent producer and transactional producer/consumer. What configuration is required?
+      ru: Как работает exactly-once семантика в Kafka с confluent-kafka-python? Объясните разницу
+        между идемпотентным продюсером и транзакционным продюсером/консьюмером. Какая конфигурация требуется?
+    code: null
   follow_ups:
     en:
     - What is the role of transactional.id?
@@ -59,13 +52,7 @@ questions:
       ru: Как оптимизировать Python Kafka продюсера и консьюмера для максимальной пропускной способности и низкой задержки?
         Рассмотрите батчинг (batch.size, linger.ms), сжатие (gzip, snappy, lz4, zstd), параметры fetch, и многопоточность
         vs многопроцессность.
-    code: "# High-throughput producer config (confluent-kafka)\nproducer_conf = {\n    'bootstrap.servers': 'localhost:9092',\n\
-      \    'batch.size': 32768,      # 32KB\n    'linger.ms': 10,           # wait up to 10ms to fill batch\n    'compression.type':\
-      \ 'lz4', # fastest compression with good ratio\n    'max.in.flight.requests.per.connection': 5,\n    'enable.idempotence':\
-      \ False,  # disable for max throughput\n}\n\n# High-throughput consumer config\nconsumer_conf = {\n    'bootstrap.servers':\
-      \ 'localhost:9092',\n    'fetch.min.bytes': 1024 * 1024,  # 1MB\n    'fetch.max.wait.ms': 500,\n    'max.partition.fetch.bytes':\
-      \ 10 * 1024 * 1024,  # 10MB\n    'auto.commit.interval.ms': 5000,\n}\n\n# Multi-processing consumer\n# Each process\
-      \ gets its own consumer with same group.id -> partition assignment\n"
+    code: null
   follow_ups:
     en:
     - What is the impact of compression on producer CPU and network?
@@ -93,21 +80,11 @@ questions:
   - serialization
   question:
     text:
-      en: How to use Avro serialization with Kafka in Python? Describe integration with Confluent Schema Registry. Show producer
-        with AvroSerializer and consumer with AvroDeserializer. How to handle schema evolution (backward/forward compatibility)?
-      ru: Как использовать Avro сериализацию с Kafka в Python? Опишите интеграцию с Confluent Schema Registry. Покажите продюсера
-        с AvroSerializer и консьюмера с AvroDeserializer. Как обрабатывать эволюцию схемы (обратная/прямая совместимость)?
-    code: "from confluent_kafka import Producer, Consumer\nfrom confluent_kafka.serialization import SerializationContext,\
-      \ MessageField\nfrom confluent_kafka.schema_registry import SchemaRegistryClient\nfrom confluent_kafka.schema_registry.avro\
-      \ import AvroSerializer, AvroDeserializer\n\nschema_registry_conf = {'url': 'http://localhost:8081'}\nschema_registry_client\
-      \ = SchemaRegistryClient(schema_registry_conf)\n\nvalue_schema_str = \"\"\"\n{\n  \"type\": \"record\",\n  \"name\"\
-      : \"User\",\n  \"fields\": [\n    {\"name\": \"name\", \"type\": \"string\"},\n    {\"name\": \"age\", \"type\": \"\
-      int\"}\n  ]\n}\n\"\"\"\n\navro_serializer = AvroSerializer(schema_registry_client, value_schema_str)\n\nproducer_conf\
-      \ = {'bootstrap.servers': 'localhost:9092'}\nproducer = Producer(producer_conf)\n\nuser = {'name': 'Alice', 'age': 30}\n\
-      producer.produce(topic='users', \n                 value=avro_serializer(user, SerializationContext('users', MessageField.VALUE)))\n\
-      producer.flush()\n\navro_deserializer = AvroDeserializer(schema_registry_client)\nconsumer_conf = {'bootstrap.servers':\
-      \ 'localhost:9092', 'group.id': 'avro-group'}\nconsumer = Consumer(consumer_conf)\nconsumer.subscribe(['users'])\n\n\
-      msg = consumer.poll(1.0)\ndeserialized = avro_deserializer(msg.value(), SerializationContext('users', MessageField.VALUE))\n"
+      en: How does Avro serialization integrate with Kafka in Python? Explain the role of Confluent Schema Registry,
+        AvroSerializer, AvroDeserializer, and how schema evolution (backward/forward compatibility) is handled.
+      ru: Как Avro сериализация интегрируется с Kafka в Python? Объясните роль Confluent Schema Registry,
+        AvroSerializer, AvroDeserializer и как обрабатывается эволюция схем (обратная/прямая совместимость).
+    code: null
   follow_ups:
     en:
     - What is the difference between Avro, Protobuf, and JSON Schema?
@@ -134,21 +111,13 @@ questions:
   - high-throughput
   question:
     text:
-      en: 'How to parallelize Kafka message processing in Python using multiprocessing? Show a pattern: one consumer process
-        that distributes messages to worker processes via queue. Discuss rebalancing, commit coordination, and handling backpressure.'
-      ru: 'Как распараллелить обработку сообщений Kafka в Python с помощью multiprocessing? Покажите паттерн: один процесс-консьюмер,
-        который распределяет сообщения в рабочие процессы через очередь. Обсудите ребалансировку, координацию коммитов и управление
-        backpressure.'
-    code: "import multiprocessing as mp\nfrom confluent_kafka import Consumer\nimport time\n\ndef worker_process(in_queue,\
-      \ worker_id):\n    while True:\n        msg = in_queue.get()\n        if msg is None:\n            break\n        #\
-      \ heavy processing\n        time.sleep(0.1)\n        print(f\"Worker {worker_id}: processed offset {msg.offset()}\"\
-      )\n        # signal done? commit requires offset tracking\n\ndef main():\n    queue = mp.Queue(maxsize=1000)  # backpressure\n\
-      \    workers = [mp.Process(target=worker_process, args=(queue, i)) for i in range(4)]\n    for w in workers: w.start()\n\
-      \    \n    consumer = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'mp-group'})\n    consumer.subscribe(['topic'])\n\
-      \    \n    try:\n        while True:\n            msg = consumer.poll(0.1)\n            if msg and not msg.error():\n\
-      \                queue.put(msg)  # may block if full (backpressure)\n                # commit after processing? need\
-      \ coordination\n                # naive: commit periodically or after queue empty\n    finally:\n        for _ in workers:\
-      \ queue.put(None)\n        for w in workers: w.join()\n        consumer.close()\n"
+      en: What patterns exist for parallel Kafka message processing in Python? Discuss the trade-offs between
+        a single consumer distributing to worker processes via queue vs the process-per-partition pattern.
+        How do you handle rebalancing, commit coordination, and backpressure?
+      ru: Какие паттерны существуют для параллельной обработки Kafka сообщений в Python? Обсудите компромиссы между
+        одним консьюмером, распределяющим сообщения в воркер-процессы через очередь, и паттерном process-per-partition.
+        Как обрабатывать ребалансировку, координацию коммитов и backpressure?
+    code: null
   follow_ups:
     en:
     - How to commit offsets reliably with worker processes?

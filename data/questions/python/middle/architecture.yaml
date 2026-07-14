@@ -62,16 +62,7 @@ questions:
       text:
         en: "What is dependency injection? How do you implement it in Python without a framework?"
         ru: "Что такое внедрение зависимостей (dependency injection)? Как реализовать его в Python без фреймворка?"
-      code: |
-        # Tight coupling
-        class UserService:
-            def __init__(self):
-                self.repo = PostgresUserRepo()
-
-        # With dependency injection
-        class UserService:
-            def __init__(self, repo: UserRepository):
-                self.repo = repo
+      code: null
     follow_ups:
       en:
         - "What are the benefits and drawbacks of DI frameworks?"

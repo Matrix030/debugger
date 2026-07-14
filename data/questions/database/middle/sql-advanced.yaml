@@ -13,13 +13,7 @@ questions:
       text:
         en: "How do window functions work in SQL? Explain ROW_NUMBER, RANK, and SUM with OVER."
         ru: "Как работают оконные функции в SQL? Объясните ROW_NUMBER, RANK и SUM с OVER."
-      code: |
-        SELECT
-            department,
-            salary,
-            ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) as rank,
-            AVG(salary) OVER (PARTITION BY department) as dept_avg
-        FROM employees;
+      code: null
     follow_ups:
       en:
         - "What is the difference between ROW_NUMBER, RANK, and DENSE_RANK?"
@@ -43,15 +37,7 @@ questions:
       text:
         en: "What are Common Table Expressions (CTEs) and recursive queries in SQL?"
         ru: "Что такое обобщённые табличные выражения (CTE) и рекурсивные запросы в SQL?"
-      code: |
-        WITH dept_stats AS (
-            SELECT department_id, COUNT(*) as emp_count, AVG(salary) as avg_sal
-            FROM employees
-            GROUP BY department_id
-        )
-        SELECT d.name, s.emp_count, s.avg_sal
-        FROM departments d
-        JOIN dept_stats s ON d.id = s.department_id;
+      code: null
     follow_ups:
       en:
         - "What is the difference between CTE and subquery?"
@@ -75,8 +61,7 @@ questions:
       text:
         en: "What is the difference between correlated and non-correlated subqueries? When is EXISTS preferred over IN?"
         ru: "В чём разница между коррелированными и некоррелированными подзапросами? Когда EXISTS предпочтительнее IN?"
-      code: |
-        -- Find departments with employees above average salary
+      code: null
     follow_ups:
       en:
         - "What is the difference between IN and EXISTS in terms of performance?"
@@ -149,15 +134,7 @@ questions:
       text:
         en: "What are views and materialized views in SQL? When would you use each?"
         ru: "Что такое представления (views) и материализованные представления в SQL? Когда что использовать?"
-      code: |
-        CREATE VIEW active_users AS
-        SELECT * FROM users WHERE status = 'active';
-
-        CREATE MATERIALIZED VIEW monthly_sales AS
-        SELECT date_trunc('month', order_date) as month,
-               SUM(amount) as total
-        FROM orders
-        GROUP BY month;
+      code: null
     follow_ups:
       en:
         - "Can you INSERT/UPDATE through a view?"
