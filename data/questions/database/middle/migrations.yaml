@@ -13,9 +13,7 @@ questions:
       text:
         en: "What is Alembic and how does it relate to SQLAlchemy?"
         ru: "Что такое Alembic и как он связан с SQLAlchemy?"
-      code: |
-        alembic revision --autogenerate -m "add users table"
-        alembic upgrade head
+      code: null
     follow_ups:
       en:
         - "What is stored in alembic_version?"
@@ -141,8 +139,7 @@ questions:
       text:
         en: "How do you add an index to a large PostgreSQL table with minimal locking?"
         ru: "Как добавить index на большую таблицу PostgreSQL с минимальной блокировкой?"
-      code: |
-        CREATE INDEX CONCURRENTLY idx_users_email ON users(email);
+      code: null
     follow_ups:
       en:
         - "Why is regular CREATE INDEX problematic on big tables?"

@@ -34,14 +34,7 @@ questions:
       text:
         en: "What is the MergeTree engine family in ClickHouse?"
         ru: "Что такое семейство движков MergeTree в ClickHouse?"
-      code: |
-        CREATE TABLE events (
-            event_date Date,
-            user_id UInt64,
-            event_type String
-        ) ENGINE = MergeTree()
-        PARTITION BY toYYYYMM(event_date)
-        ORDER BY (event_date, user_id);
+      code: null
     follow_ups:
       en:
         - "What is ORDER BY used for in MergeTree?"
@@ -83,11 +76,7 @@ questions:
       text:
         en: "Why are aggregate queries fast in ClickHouse? What is vectorized execution?"
         ru: "Почему агрегатные запросы быстры в ClickHouse? Что такое vectorized execution?"
-      code: |
-        SELECT event_type, count()
-        FROM events
-        WHERE event_date >= today() - 7
-        GROUP BY event_type;
+      code: null
     follow_ups:
       en:
         - "How does columnar storage help SUM/COUNT?"

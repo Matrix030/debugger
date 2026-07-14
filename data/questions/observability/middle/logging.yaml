@@ -19,40 +19,7 @@ questions:
       ru: 'Напишите LogQL запросы: (a) отфильтровать все логи с ''error'' в сообщении, (b) показать количество ошибок в минуту,
         (c) распарсить JSON лог и извлечь поле, (d) рассчитать rate ошибок за 5 минут. Объясните фильтры строк (=, !=, =~,
         !~) и сопоставители меток.'
-    code: '# (a) simple filter
-
-      {job="app"} |= "error"
-
-
-      # (b) count of error logs per minute
-
-      sum(count_over_time({job="app"} |= "error" [1m]))
-
-
-      # (c) parse JSON and extract status field
-
-      {job="app"} | json | line_format "Status: {{.status}}"
-
-
-      # (d) rate of error logs per second
-
-      rate({job="app"} |= "error" [5m])
-
-
-      # Line filters
-
-      {app="myapp"} != "debug"               # exclude debug
-
-      {app="myapp"} =~ "(?i)error|fatal"     # regex case-insensitive
-
-      {app="myapp"} !~ "INFO.*user"          # negative regex
-
-
-      # Label matchers
-
-      {namespace="prod", app=~"web-.*"}       # regex on label
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the difference between |= and |~?
@@ -82,11 +49,7 @@ questions:
       ru: Как работает мультитенантность в Loki? Как настроить разделение тенантов через заголовок X-Scope-OrgID? Как настроить
         Grafana для отправки логов в конкретный тенант (через пользовательские HTTP заголовки)? Объясните, как выполнять запросы
         между тенантами (как администратор).
-    code: "# Loki auth config (enable multitenancy)\nauth_enabled: true\n\n# Promtail config with tenant ID\nclients:\n  -\
-      \ url: http://loki:3100/loki/api/v1/push\n    tenant_id: \"tenant-1\"\n\n# Grafana data source configuration (HTTP headers)\n\
-      # Custom HTTP Headers: X-Scope-OrgID = tenant-1\n\n# Admin query across all tenants (requires auth)\n# Not supported\
-      \ in default Loki; use query frontend with special flag or Loki microservices mode\n# In Loki's distributor, you can\
-      \ skip tenant labeling for internal queries.\n"
+    code: null
   follow_ups:
     en:
     - How to use nginx sidecar for dynamic tenant extraction?
@@ -116,13 +79,7 @@ questions:
         as labels.'
       ru: 'Как использовать конвейерные этапы Promtail? Объясните docker_sd, file_targets и этапы: docker, regex, json, template,
         labels, output, timestamp, replace. Покажите пример извлечения level и module из строки лога и добавления их как меток.'
-    code: "# Promtail config with pipeline\nscrape_configs:\n  - job_name: app-logs\n    file_sd_configs:\n      - files:\
-      \ [\"/var/log/*.log\"]\n    pipeline_stages:\n      - regex:\n          expression: 'level=(?P<level>\\w+) module=(?P<module>\\\
-      w+)'\n      - labels:\n          level: \"\"\n          module: \"\"\n      - json:\n          expressions: {time: timestamp,\
-      \ msg: message}\n      - timestamp:\n          source: time\n          format: RFC3339\n      - output:\n          source:\
-      \ msg\n\n# Docker service discovery (logs from containers)\n  - job_name: docker\n    docker_sd_configs:\n      - host:\
-      \ unix:///var/run/docker.sock\n    relabel_configs:\n      - source_labels: [__meta_docker_container_name]\n       \
-      \ target_label: container\n"
+    code: null
   follow_ups:
     en:
     - How to drop logs or filter at pipeline level?

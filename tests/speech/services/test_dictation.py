@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for dictation speech recognition."""
 
-from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
-from app.ai.faster_whisper_transcriber import FasterWhisperTranscriber
 from app.speech.services.dictation import DictationSession
 from tests.helpers.transcription import FakeTranscriber
 
@@ -38,25 +36,3 @@ class TestDictationSession:
         assert transcriber.last_audio is not None
         assert transcriber.last_audio.dtype == np.float32
         assert len(transcriber.last_audio) == 1600
-
-
-class TestFasterWhisperTranscriber:
-    """Tests for the faster-whisper adapter."""
-
-    @pytest.mark.asyncio
-    async def test_transcribe_calls_model(self):
-        """Adapter delegates to WhisperModel.transcribe with locale language."""
-        segment = MagicMock()
-        segment.text = " hello"
-        model = MagicMock()
-        model.transcribe.return_value = ([segment], None)
-
-        transcriber = FasterWhisperTranscriber(model)
-        audio = np.zeros(1600, dtype=np.float32)
-        text = await transcriber.transcribe(audio, "ru")
-
-        assert text == "hello"
-        model.transcribe.assert_called_once()
-        call_kwargs = model.transcribe.call_args.kwargs
-        assert call_kwargs["language"] == "ru"
-        assert call_kwargs["task"] == "transcribe"

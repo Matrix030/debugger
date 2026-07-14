@@ -13,9 +13,7 @@ questions:
       text:
         en: "What is the N+1 query problem in Django? How do select_related and prefetch_related help?"
         ru: "Что такое проблема N+1 запросов в Django? Как помогают select_related и prefetch_related?"
-      code: |
-        Article.objects.select_related("author").all()
-        Article.objects.prefetch_related("tags").all()
+      code: null
     follow_ups:
       en:
         - "When use select_related vs prefetch_related?"
@@ -36,13 +34,7 @@ questions:
       text:
         en: "How do custom managers and QuerySets work in Django?"
         ru: "Как работают кастомные managers и QuerySets в Django?"
-      code: |
-        class PublishedQuerySet(models.QuerySet):
-            def published(self):
-                return self.filter(status="published")
-
-        class Article(models.Model):
-            objects = PublishedQuerySet.as_manager()
+      code: null
     follow_ups:
       en:
         - "What is the difference between Manager and QuerySet methods?"
@@ -63,14 +55,7 @@ questions:
       text:
         en: "What are Django signals? When should you use them and when avoid them?"
         ru: "Что такое сигналы Django? Когда их использовать, а когда избегать?"
-      code: |
-        from django.db.models.signals import post_save
-        from django.dispatch import receiver
-
-        @receiver(post_save, sender=User)
-        def create_profile(sender, instance, created, **kwargs):
-            if created:
-                Profile.objects.create(user=instance)
+      code: null
     follow_ups:
       en:
         - "What is the difference between pre_save and post_save?"
@@ -91,15 +76,7 @@ questions:
       text:
         en: "How does Django's caching framework work? Compare per-view vs low-level cache API."
         ru: "Как работает кеширование в Django? Сравните per-view и low-level cache API."
-      code: |
-        from django.views.decorators.cache import cache_page
-        from django.core.cache import cache
-
-        @cache_page(60 * 15)
-        def my_view(request):
-            ...
-
-        cache.set("key", value, timeout=300)
+      code: null
     follow_ups:
       en:
         - "What backends can Django cache use (Redis, Memcached)?"

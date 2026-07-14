@@ -3,13 +3,18 @@
 """WebSocket message handling for coding sessions."""
 
 from collections.abc import AsyncIterator
+from dataclasses import replace
 import logging
 from typing import Any
 
 from app.ai.base import AIProvider
 from app.coding.api.errors import coding_ws_error_payload
 from app.coding.api.ws_protocol import coding_event_to_message
-from app.coding.domain.exceptions import CodingDomainError
+from app.coding.domain.entities import CodingTask
+from app.coding.domain.exceptions import CodingDomainError, CodingSectionNotFoundError
+from app.coding.repositories.uow import CodingUnitOfWork
+from app.coding.services.events import CodingFeedbackEvent
+from app.coding.services.navigation import CodingNavigationService
 from app.coding.services.submission import CodingSubmissionService
 from app.interview.domain.exceptions import InterviewDomainError
 from app.interview.services.ai_errors import ai_error_message_for_client
@@ -50,6 +55,14 @@ class CodingWebSocketService:
                 yield message
             return
 
+        if msg_type == "timeout":
+            async for message in CodingWebSocketService._handle_timeout(
+                raw,
+                interview_id=interview_id,
+            ):
+                yield message
+            return
+
         yield {
             "type": "error",
             "message": f"Unknown message type: {msg_type}",
@@ -84,6 +97,78 @@ class CodingWebSocketService:
             yield coding_ws_error_payload(exc)
         except Exception as exc:
             logger.exception("Coding submit failed for interview %s", interview_id)
+            yield {
+                "type": "error",
+                "message": ai_error_message_for_client(exc),
+            }
+
+    @staticmethod
+    async def _handle_timeout(
+        raw: dict[str, Any],
+        *,
+        interview_id: str,
+    ) -> AsyncIterator[dict[str, Any]]:
+        task_id = str(raw.get("task_id", "")).strip()
+        if not task_id:
+            yield {
+                "type": "error",
+                "message": "task_id is required",
+            }
+            return
+
+        try:
+            with CodingUnitOfWork(auto_commit=True) as uow:
+                section = uow.coding_sections.get_aggregate(interview_id)
+                if section is None:
+                    raise CodingSectionNotFoundError(interview_id)
+                section.ensure_active()
+                current = section.require_current_task(task_id)
+                round_num = current.round
+                order = current.order
+
+                # Mark the current task as timed out: score 0, no feedback
+                tasks = tuple(
+                    replace(
+                        task,
+                        score=0,
+                        feedback="Time expired",
+                        submitted_code=CodingTask.TIME_EXPIRED_CODE,
+                        submit_test_summary=None,
+                    )
+                    if task.id == current.id
+                    else task
+                    for task in section.tasks
+                )
+                updated = replace(section, tasks=tasks)
+                uow.coding_sections.save_aggregate(updated)
+
+                # Advance to the next unsubmitted task
+                next_task_data, timer_remaining = (
+                    CodingNavigationService.advance_to_next_unsubmitted(
+                        uow,
+                        interview_id,
+                        task_id=task_id,
+                        round_num=round_num,
+                    )
+                )
+
+            yield coding_event_to_message(
+                CodingFeedbackEvent(
+                    task_id=task_id,
+                    order=order,
+                    round=round_num,
+                    follow_up_needed=False,
+                    follow_up_text=None,
+                    follow_up_mode=None,
+                    next_task=next_task_data,
+                    feedback="Time expired",
+                    timer_remaining_seconds=timer_remaining,
+                )
+            )
+        except (InterviewDomainError, CodingDomainError) as exc:
+            yield coding_ws_error_payload(exc)
+        except Exception as exc:
+            logger.exception("Coding timeout failed for interview %s", interview_id)
             yield {
                 "type": "error",
                 "message": ai_error_message_for_client(exc),

@@ -477,6 +477,26 @@
         },
     };
 
+    window.grillkitOnTimerExpired = function () {
+        if (!taskId || isSubmitting) {
+            return;
+        }
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            showError("Timer expired but connection lost. Refresh to continue.");
+            return;
+        }
+        isSubmitting = true;
+        window.isSubmitting = true;
+        setComposerEnabled(false);
+        stopTaskTimer();
+        ws.send(
+            JSON.stringify({
+                type: "timeout",
+                task_id: taskId,
+            })
+        );
+    };
+
     document.addEventListener("DOMContentLoaded", function () {
         if (panel.dataset.complete === "true" || !taskId) {
             return;

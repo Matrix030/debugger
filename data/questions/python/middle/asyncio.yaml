@@ -13,10 +13,7 @@ questions:
       text:
         en: "What is asyncio.TaskGroup (Python 3.11+)? How does it improve structured concurrency?"
         ru: "Что такое asyncio.TaskGroup (Python 3.11+)? Как он улучшает structured concurrency?"
-      code: |
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(fetch(url1))
-            tg.create_task(fetch(url2))
+      code: null
     follow_ups:
       en:
         - "What happens if one task in TaskGroup fails?"
@@ -37,15 +34,7 @@ questions:
       text:
         en: "How does asyncio.Queue work? Give a producer-consumer example."
         ru: "Как работает asyncio.Queue? Приведите пример producer-consumer."
-      code: |
-        queue = asyncio.Queue(maxsize=10)
-
-        async def producer():
-            await queue.put(item)
-
-        async def consumer():
-            item = await queue.get()
-            queue.task_done()
+      code: null
     follow_ups:
       en:
         - "What is the difference between Queue and PriorityQueue?"
@@ -66,15 +55,7 @@ questions:
       text:
         en: "What synchronization primitives does asyncio provide? When use Lock vs Semaphore?"
         ru: "Какие примитивы синхронизации есть в asyncio? Когда Lock, а когда Semaphore?"
-      code: |
-        lock = asyncio.Lock()
-        sem = asyncio.Semaphore(5)
-
-        async with lock:
-            ...
-
-        async with sem:
-            ...
+      code: null
     follow_ups:
       en:
         - "Why must you not use threading.Lock in async code?"
@@ -95,9 +76,7 @@ questions:
       text:
         en: "What is loop.run_in_executor()? When must you use it?"
         ru: "Что такое loop.run_in_executor()? Когда его нужно использовать?"
-      code: |
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, blocking_io, arg)
+      code: null
     follow_ups:
       en:
         - "What executor is used when None is passed?"
@@ -118,13 +97,7 @@ questions:
       text:
         en: "How does task cancellation work in asyncio? What is asyncio.shield()?"
         ru: "Как работает отмена задач в asyncio? Что такое asyncio.shield()?"
-      code: |
-        task = asyncio.create_task(long_running())
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
+      code: null
     follow_ups:
       en:
         - "What should cleanup code do on CancelledError?"

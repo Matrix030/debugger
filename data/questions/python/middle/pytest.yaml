@@ -13,12 +13,7 @@ questions:
       text:
         en: "What fixture scopes exist in pytest? When use session vs function scope?"
         ru: "Какие scope у фикстур в pytest? Когда использовать session vs function?"
-      code: |
-        @pytest.fixture(scope="session")
-        def db_engine():
-            engine = create_engine()
-            yield engine
-            engine.dispose()
+      code: null
     follow_ups:
       en:
         - "What is module scope useful for?"
@@ -39,11 +34,7 @@ questions:
       text:
         en: "What does autouse=True on a fixture do?"
         ru: "Что делает autouse=True у фикстуры?"
-      code: |
-        @pytest.fixture(autouse=True)
-        def reset_cache():
-            cache.clear()
-            yield
+      code: null
     follow_ups:
       en:
         - "When is autouse helpful vs explicit fixture parameters?"
@@ -64,10 +55,7 @@ questions:
       text:
         en: "What is the monkeypatch fixture in pytest? Give examples of what it can patch."
         ru: "Что такое фикстура monkeypatch в pytest? Приведите примеры того, что можно патчить."
-      code: |
-        def test_env(monkeypatch):
-            monkeypatch.setenv("API_KEY", "test")
-            monkeypatch.setattr("myapp.client.timeout", 1)
+      code: null
     follow_ups:
       en:
         - "How does monkeypatch undo changes after the test?"
@@ -88,15 +76,7 @@ questions:
       text:
         en: "How do capsys and caplog fixtures help test output and logging?"
         ru: "Как фикстуры capsys и caplog помогают тестировать вывод и логирование?"
-      code: |
-        def test_print(capsys):
-            print("hello")
-            captured = capsys.readouterr()
-            assert "hello" in captured.out
-
-        def test_log(caplog):
-            logger.info("event")
-            assert "event" in caplog.text
+      code: null
     follow_ups:
       en:
         - "What is capfd used for?"
@@ -117,13 +97,7 @@ questions:
       text:
         en: "How do you test async code with pytest-asyncio?"
         ru: "Как тестировать async-код с pytest-asyncio?"
-      code: |
-        import pytest
-
-        @pytest.mark.asyncio
-        async def test_fetch():
-            result = await fetch_data()
-            assert result["ok"]
+      code: null
     follow_ups:
       en:
         - "What asyncio_mode options exist in pytest config?"

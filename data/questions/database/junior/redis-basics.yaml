@@ -34,9 +34,7 @@ questions:
       text:
         en: "What Redis data structures would you use for a user session vs a user profile hash?"
         ru: "Какие структуры Redis использовать для user session vs hash профиля?"
-      code: |
-        SET session:abc123 "{user_id: 1}" EX 3600
-        HSET user:1 name "Alice" email "a@example.com"
+      code: null
     follow_ups:
       en:
         - "When use JSON string vs Redis Hash?"
@@ -57,10 +55,7 @@ questions:
       text:
         en: "What is TTL in Redis? How do EXPIRE and SET with EX option work?"
         ru: "Что такое TTL в Redis? Как работают EXPIRE и SET с опцией EX?"
-      code: |
-        SET cache:article:42 "payload" EX 300
-        EXPIRE cache:article:42 300
-        TTL cache:article:42
+      code: null
     follow_ups:
       en:
         - "What TTL value indicates a key has no expiry?"
@@ -103,9 +98,7 @@ questions:
       text:
         en: "What are Redis Lists and Sets used for? Give a practical example of each."
         ru: "Для чего Redis Lists и Sets? Приведите практический пример каждого."
-      code: |
-        LPUSH queue:emails "msg1"
-        SADD tags:article:1 "python" "redis"
+      code: null
     follow_ups:
       en:
         - "How do Sets differ from Lists?"
@@ -168,10 +161,7 @@ questions:
       text:
         en: "How do you connect to Redis from Python? What is the difference between redis-py sync and redis.asyncio?"
         ru: "Как подключиться к Redis из Python? Чем отличается redis-py sync от redis.asyncio?"
-      code: |
-        import redis
-        r = redis.Redis(host="localhost", port=6379, decode_responses=True)
-        r.set("key", "value")
+      code: null
     follow_ups:
       en:
         - "Why use connection pooling?"

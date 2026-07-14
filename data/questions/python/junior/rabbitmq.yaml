@@ -18,29 +18,7 @@ questions:
         for sync, async, and production use?
       ru: Какие основные Python клиентские библиотеки для RabbitMQ? Сравните pika, aio-pika и kombu. Какая подходит для синхронного,
         асинхронного использования и продакшена?
-    code: '# Pika (synchronous, but can do async via SelectConnection/Asyncore)
-
-      import pika
-
-      connection = pika.BlockingConnection(pika.ConnectionParameters(''localhost''))
-
-      channel = connection.channel()
-
-
-      # Aio-pika (asyncio native)
-
-      import aio_pika
-
-      connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
-
-
-      # Kombu (abstraction over multiple brokers, used by Celery)
-
-      from kombu import Connection, Exchange, Queue
-
-      conn = Connection(''amqp://guest:guest@localhost:5672//'')
-
-      '
+    code: null
   follow_ups:
     en:
     - Is pika production-ready?
@@ -66,18 +44,11 @@ questions:
   - confirms
   question:
     text:
-      en: Write a RabbitMQ producer in Python using pika with mandatory flag and publisher confirms (asynchronous). Show how
-        to handle confirmation and return callbacks. Include message persistence and exchange declaration.
-      ru: Напишите RabbitMQ продюсера на Python с использованием pika с флагом mandatory и подтверждениями издателя (асинхронно).
-        Покажите обработку обратных вызовов подтверждения и возврата. Включите персистентность сообщения и объявление обменника.
-    code: "import pika\nfrom pika.spec import BasicProperties\n\nconnection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))\n\
-      channel = connection.channel()\nchannel.confirm_delivery()  # enable publisher confirms\n\n# Callback for successful\
-      \ confirm\ndef on_confirm(frame):\n    print(f\"Message confirmed: {frame.method.delivery_tag}\")\n\n# Callback for\
-      \ mandatory flag (message returned)\ndef on_return(ch, method, properties, body):\n    print(f\"Message returned: {body}\"\
-      )\n\nchannel.add_on_return_callback(on_return)\nchannel.add_on_delivery_confirm_callback(on_confirm)\n\nchannel.exchange_declare(exchange='my_exchange',\
-      \ exchange_type='topic', durable=True)\n\nprops = BasicProperties(delivery_mode=2, content_type='application/json')\
-      \  # persistent\nchannel.basic_publish(\n    exchange='my_exchange', routing_key='key', body=b'Hello',\n    mandatory=True,\
-      \ properties=props\n)\nconnection.close()\n"
+      en: What is the structure of a RabbitMQ producer in pika? Explain how publisher confirms, the mandatory flag,
+        message persistence, and exchange declaration work together.
+      ru: Как устроен RabbitMQ продюсер в pika? Объясните, как работают подтверждения издателя (publisher confirms),
+        флаг mandatory, персистентность сообщений и объявление обменника.
+    code: null
   follow_ups:
     en:
     - What happens if confirm is not called?

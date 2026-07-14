@@ -100,8 +100,7 @@
 {% block scripts %}
 {% if session_mode %}
 <script src="/static/js/session_phases.js?v={{ static_version('js/session_phases.js') }}"></script>
-<script>
-window.grillkitSessionPhases = {{ {
+<script id="session-phases-json" type="application/json">{{ {
     "sessionMode": session_mode,
     "activePhase": active_phase,
     "phaseOrder": phase_order,
@@ -109,125 +108,22 @@ window.grillkitSessionPhases = {{ {
     "hasCoding": coding is defined and coding is not none,
     "codingComplete": coding.complete if coding is defined and coding is not none else true,
     "theoryComplete": theory.complete if theory is defined and theory is not none else true,
-} | tojson }};
+} | tojson }}</script>
+<script>
+window.grillkitSessionPhases = JSON.parse(document.getElementById('session-phases-json').textContent);
 </script>
 {% endif %}
 {% if coding.current_task %}
+<script id="coding-bootstrap-json" type="application/json">{{ coding.current_task | tojson }}</script>
 <script>
-window.grillkitCodingBootstrap = {
-    currentTask: {{ coding.current_task | tojson }}
-};
+window.grillkitCodingBootstrap = { currentTask: JSON.parse(document.getElementById('coding-bootstrap-json').textContent) };
 </script>
 {% endif %}
 {% if coding.task_timer_enabled and interview.status == "active" %}
 <script src="/static/js/interview_timer.js?v={{ static_version('js/interview_timer.js') }}"></script>
 {% endif %}
 {% if interview.status == "active" %}
-<script>
-    const initialInterviewStatus = '{{ interview.status }}';
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const completeWsUrl = wsProtocol + '//' + window.location.host + '/interview/' + {{ interview.id | tojson }} + '/theory/ws';
-    const llmRequestTimeoutSeconds = {{ llm_request_timeout_seconds | tojson }};
-    let completeWs = null;
-    let completeReconnectTimer = null;
-    let isEndingInterview = false;
-    let evaluationWatchdogTimer = null;
-
-    function showCompleteEvaluating(visible) {
-        const indicator = document.getElementById('coding-evaluating-indicator');
-        if (indicator) {
-            indicator.hidden = !visible;
-        }
-    }
-
-    function clearEvaluationWatchdog() {
-        if (evaluationWatchdogTimer) {
-            clearTimeout(evaluationWatchdogTimer);
-            evaluationWatchdogTimer = null;
-        }
-    }
-
-    function startEvaluationWatchdog() {
-        clearEvaluationWatchdog();
-        const graceMs = 15000;
-        const timeoutMs = (llmRequestTimeoutSeconds * 1000) + graceMs;
-        evaluationWatchdogTimer = setTimeout(function () {
-            evaluationWatchdogTimer = null;
-            if (!isEndingInterview) return;
-            showCompleteEvaluating(false);
-            isEndingInterview = false;
-            const endBtn = document.getElementById('coding-end-btn');
-            if (endBtn) endBtn.disabled = false;
-            alert('Final evaluation is taking too long. Check /config and try again.');
-        }, timeoutMs);
-    }
-
-    function connectCompleteWebSocket() {
-        completeWs = new WebSocket(completeWsUrl);
-        completeWs.onopen = function () {
-            if (completeReconnectTimer) {
-                clearTimeout(completeReconnectTimer);
-                completeReconnectTimer = null;
-            }
-        };
-        completeWs.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            if (data.type === 'evaluating') {
-                showCompleteEvaluating(true);
-                startEvaluationWatchdog();
-            } else if (data.type === 'interview_completed') {
-                clearEvaluationWatchdog();
-                showCompleteEvaluating(false);
-                window.location.href = '/interview/' + {{ interview.id | tojson }} + '/results';
-            } else if (data.type === 'error') {
-                clearEvaluationWatchdog();
-                showCompleteEvaluating(false);
-                isEndingInterview = false;
-                const endBtn = document.getElementById('coding-end-btn');
-                if (endBtn) endBtn.disabled = false;
-                alert(data.message || 'Failed to complete interview.');
-            }
-        };
-        completeWs.onclose = function () {
-            if (isEndingInterview) {
-                clearEvaluationWatchdog();
-                showCompleteEvaluating(false);
-                isEndingInterview = false;
-                const endBtn = document.getElementById('coding-end-btn');
-                if (endBtn) endBtn.disabled = false;
-            }
-            completeReconnectTimer = setTimeout(connectCompleteWebSocket, 3000);
-        };
-    }
-
-    function endCodingInterview() {
-        if (!confirm('Are you sure you want to end this interview?')) return;
-        if (isEndingInterview) return;
-        isEndingInterview = true;
-        const endBtn = document.getElementById('coding-end-btn');
-        if (endBtn) endBtn.disabled = true;
-        showCompleteEvaluating(true);
-        startEvaluationWatchdog();
-        if (!completeWs || completeWs.readyState !== WebSocket.OPEN) {
-            connectCompleteWebSocket();
-            setTimeout(function () {
-                if (completeWs && completeWs.readyState === WebSocket.OPEN) {
-                    completeWs.send(JSON.stringify({ type: 'complete' }));
-                }
-            }, 500);
-            return;
-        }
-        completeWs.send(JSON.stringify({ type: 'complete' }));
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        connectCompleteWebSocket();
-        const endBtn = document.getElementById('coding-end-btn');
-        if (endBtn) {
-            endBtn.addEventListener('click', endCodingInterview);
-        }
-    });
-</script>
+<script src="/static/js/coding_complete.js?v={{ static_version('js/coding_complete.js') }}"></script>
 {% endif %}
 <script src="/static/js/coding_editor.js?v={{ static_version('js/coding_editor.js') }}"></script>
 {% if interview.status == "active" and coding.current_task and not coding.complete %}

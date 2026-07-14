@@ -76,13 +76,7 @@ questions:
       text:
         en: "How does Celery integrate with Django? Describe broker, workers, and result backend."
         ru: "Как Celery интегрируется с Django? Опишите broker, workers и result backend."
-      code: |
-        # tasks.py
-        from celery import shared_task
-
-        @shared_task
-        def send_welcome_email(user_id):
-            ...
+      code: null
     follow_ups:
       en:
         - "What brokers are commonly used (Redis, RabbitMQ)?"
@@ -167,8 +161,7 @@ questions:
       text:
         en: "Why define a custom User model at project start? What are the migration implications?"
         ru: "Зачем определять кастомную User model в начале проекта? Какие последствия для миграций?"
-      code: |
-        AUTH_USER_MODEL = "accounts.User"
+      code: null
     follow_ups:
       en:
         - "What happens if you switch User model late?"

@@ -17,11 +17,7 @@ questions:
         from Kafka?
       ru: Что такое RabbitMQ? Какие протоколы обмена сообщениями поддерживает (AMQP 0-9-1, AMQP 1.0, MQTT, STOMP)? Чем отличается
         от Kafka?
-    code: '# AMQP 0-9-1 core components: Exchange, Queue, Binding
-
-      # Producer -> Exchange -> (binding) -> Queue -> Consumer
-
-      '
+    code: null
   follow_ups:
     en:
     - When to choose RabbitMQ over Kafka?
@@ -49,30 +45,7 @@ questions:
         of when to use each type.'
       ru: 'Объясните типы обменников RabbitMQ: direct, topic, fanout, headers. Как работают привязки (bindings) и ключи маршрутизации?
         Приведите примеры использования каждого типа.'
-    code: '# Direct exchange: routing key = binding key
-
-      channel.exchange_declare(exchange=''direct_logs'', exchange_type=''direct'')
-
-      channel.queue_bind(queue=''error_queue'', exchange=''direct_logs'', routing_key=''error'')
-
-
-      # Topic exchange: wildcards (* for one word, # for zero or more)
-
-      channel.exchange_declare(exchange=''topic_logs'', exchange_type=''topic'')
-
-      channel.queue_bind(queue=''all_queues'', exchange=''topic_logs'', routing_key=''#'')
-
-
-      # Fanout: ignores routing key, sends to all bound queues
-
-      channel.exchange_declare(exchange=''broadcast'', exchange_type=''fanout'')
-
-
-      # Headers: uses message header attributes instead of routing key
-
-      channel.exchange_declare(exchange=''header_exchange'', exchange_type=''headers'')
-
-      '
+    code: null
   follow_ups:
     en:
     - Can multiple bindings exist with different routing keys?
@@ -103,13 +76,7 @@ questions:
         max length, and lazy queues.
       ru: Какие свойства очередей существуют в RabbitMQ? Объясните durable, exclusive, auto-delete, TTL (для очереди и сообщения),
         максимальную длину и ленивые очереди (lazy queues).
-    code: "# Durable queue (survives broker restart)\nchannel.queue_declare(queue='task_queue', durable=True)\n\n# Exclusive\
-      \ queue (only for connection, deleted when connection closes)\nchannel.queue_declare(queue='temp', exclusive=True)\n\
-      \n# Auto-delete queue (deleted when last consumer unsubscribes)\nchannel.queue_declare(queue='ephemeral', auto_delete=True)\n\
-      \n# Per-message TTL (milliseconds)\nchannel.basic_publish(exchange='', routing_key='queue', \n                     \
-      \ properties=pika.BasicProperties(expiration='60000'))\n\n# Queue TTL (auto-delete queue after unused period)\nargs\
-      \ = {'x-expires': 1800000}  # 30 minutes\nchannel.queue_declare(queue='temp', arguments=args)\n\n# Lazy queue (messages\
-      \ stored on disk, not RAM)\nargs = {'x-queue-mode': 'lazy'}\n"
+    code: null
   follow_ups:
     en:
     - What is the trade-off of lazy queues?

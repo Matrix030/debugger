@@ -17,12 +17,7 @@ questions:
         compactor, index (boltdb-shipper or TSDB). What is the role of Promtail (or Grafana Agent)?'
       ru: 'Что такое Loki? Чем он отличается от Elasticsearch (ELK)? Объясните архитектуру Loki: distributor, ingester, querier,
         compactor, индекс (boltdb-shipper или TSDB). Какова роль Promtail (или Grafana Agent)?'
-    code: "# Simple loki-config.yaml\nauth_enabled: false\nserver:\n  http_listen_port: 3100\ningester:\n  lifecycler:\n \
-      \   ring: {kvstore: {store: inmemory}}\nstorage_config:\n  boltdb_shipper: {active_index_directory: /loki/index}\n \
-      \ filesystem: {directory: /loki/chunks}\nschema_config:\n  configs:\n    - from: 2020-01-01\n      store: boltdb-shipper\n\
-      \      object_store: filesystem\n      schema: v11\n      index: {prefix: index_, period: 24h}\n\n# Promtail config\
-      \ to tail logs and send to Loki\nscrape_configs:\n  - job_name: system\n    static_configs:\n      - targets: [localhost]\n\
-      \        labels: {job: syslog, __path__: /var/log/*.log}\n"
+    code: null
   follow_ups:
     en:
     - Why doesn't Loki do full-text indexing like Elasticsearch?
@@ -54,11 +49,7 @@ questions:
       ru: Как интегрировать Loki с Grafana? Покажите, как добавить источник данных Loki, использовать Explore для запросов
         логов и создать дашборд с панелью логов. Как переключаться с логов на метрики (и обратно) с помощью производных полей
         (извлечение trace_id для связи с Tempo).
-    code: "# Grafana datasource config (YAML provisioning)\napiVersion: 1\ndatasources:\n  - name: Loki\n    type: loki\n\
-      \    url: http://loki:3100\n    jsonData:\n      maxLines: 1000\n      derivedFields:\n        - name: trace_id\n  \
-      \        matcherRegex: \"trace_id=(\\\\w+)\"\n          url: \"$${__value.raw}\"\n          datasourceUid: tempo\n\n\
-      # Logs panel query in dashboard\n{namespace=\"prod\"} |= \"error\"\n\n# Switch to metrics (LogQL to metric query)\n\
-      sum(count_over_time({namespace=\"prod\"} |= \"error\" [5m]))\n"
+    code: null
   follow_ups:
     en:
     - How to create an alert from logs (e.g., more than 5 errors per minute)?

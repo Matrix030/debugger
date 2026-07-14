@@ -35,23 +35,7 @@ questions:
       text:
         en: "How does inheritance work in Python? What is Method Resolution Order (MRO)?"
         ru: "Как работает наследование в Python? Что такое порядок разрешения методов (MRO)?"
-      code: |
-        class A:
-            def method(self):
-                return "A"
-
-        class B(A):
-            def method(self):
-                return "B"
-
-        class C(A):
-            def method(self):
-                return "C"
-
-        class D(B, C):
-            pass
-
-        print(D().method())  # ???
+      code: null
     follow_ups:
       en:
         - "How does super() work in multiple inheritance?"
@@ -73,12 +57,7 @@ questions:
       text:
         en: "How does Python handle visibility and encapsulation? Explain single underscore, double underscore, and name mangling."
         ru: "Как Python обрабатывает видимость и инкапсуляцию? Объясните одинарное подчёркивание, двойное подчёркивание и name mangling."
-      code: |
-        class MyClass:
-            def __init__(self):
-                self.public = 1
-                self._protected = 2
-                self.__private = 3
+      code: null
     follow_ups:
       en:
         - "Are private attributes truly private in Python?"
@@ -100,18 +79,7 @@ questions:
       text:
         en: "How do you create getters and setters in Python? Explain the @property decorator."
         ru: "Как создавать геттеры и сеттеры в Python? Объясните декоратор @property."
-      code: |
-        class Temperature:
-            def __init__(self, celsius):
-                self._celsius = celsius
-
-            @property
-            def fahrenheit(self):
-                return self._celsius * 9/5 + 32
-
-            @fahrenheit.setter
-            def fahrenheit(self, value):
-                self._celsius = (value - 32) * 5/9
+      code: null
     follow_ups:
       en:
         - "When would you use @property instead of a regular attribute?"
@@ -133,13 +101,7 @@ questions:
       text:
         en: "What are dataclasses in Python? How do they differ from regular classes and __slots__?"
         ru: "Что такое dataclasses в Python? Чем они отличаются от обычных классов и __slots__?"
-      code: |
-        from dataclasses import dataclass
-
-        @dataclass
-        class Point:
-            x: float
-            y: float
+      code: null
     follow_ups:
       en:
         - "What does frozen=True do in a dataclass?"
@@ -185,20 +147,7 @@ questions:
       text:
         en: "How do you create abstract classes in Python? What is the ABC module?"
         ru: "Как создавать абстрактные классы в Python? Что такое модуль ABC?"
-      code: |
-        from abc import ABC, abstractmethod
-
-        class Shape(ABC):
-            @abstractmethod
-            def area(self) -> float:
-                pass
-
-        class Circle(Shape):
-            def __init__(self, radius):
-                self.radius = radius
-
-            def area(self):
-                return 3.14 * self.radius ** 2
+      code: null
     follow_ups:
       en:
         - "Can you instantiate an abstract class?"

@@ -18,8 +18,7 @@ questions:
         manager) and node components (kubelet, kube-proxy, container runtime). What is a Pod?
       ru: Опишите архитектуру Kubernetes. Объясните компоненты control plane (API server, etcd, scheduler, controller manager)
         и компоненты узла (kubelet, kube-proxy, container runtime). Что такое Pod?
-    code: "# Minimal Pod definition\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name:\
-      \ nginx\n    image: nginx:latest\n    ports:\n    - containerPort: 80\n"
+    code: null
   follow_ups:
     en:
     - What is the purpose of the scheduler?
@@ -48,12 +47,7 @@ questions:
         hooks, and liveness/readiness/startup probes? How to define them?
       ru: Объясните фазы жизненного цикла Pod (Pending, Running, Succeeded, Failed, Unknown). Что такое init-контейнеры, хуки
         postStart/preStop и пробы liveness/readiness/startup? Как их определить?
-    code: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: probe-demo\nspec:\n  initContainers:\n  - name: init-myservice\n\
-      \    image: busybox\n    command: ['sh', '-c', 'echo \"init\"']\n  containers:\n  - name: app\n    image: nginx\n  \
-      \  livenessProbe:\n      httpGet: {path: /healthz, port: 80}\n      initialDelaySeconds: 15\n      periodSeconds: 20\n\
-      \    readinessProbe:\n      exec: {command: [\"cat\", \"/tmp/ready\"]}\n      initialDelaySeconds: 5\n    lifecycle:\n\
-      \      postStart: {exec: {command: [\"/bin/sh\", \"-c\", \"echo started\"]}}\n      preStop: {exec: {command: [\"/bin/sh\"\
-      , \"-c\", \"nginx -s quit\"]}}\n"
+    code: null
   follow_ups:
     en:
     - What happens if liveness probe fails?
@@ -85,10 +79,7 @@ questions:
         each? How does a RollingUpdate differ from Recreate strategy?'
       ru: 'Объясните ресурсы рабочих нагрузок Kubernetes: Deployment, ReplicaSet, StatefulSet, DaemonSet, Job, CronJob. Когда
         использовать каждый? Чем отличается стратегия RollingUpdate от Recreate?'
-    code: "# RollingUpdate vs Recreate\nspec:\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxSurge: 25%\n\
-      \      maxUnavailable: 25%\n\n# StatefulSet with stable network identity\napiVersion: apps/v1\nkind: StatefulSet\nspec:\n\
-      \  serviceName: \"my-service\"\n  replicas: 3\n  template: ...\n\n# DaemonSet (one pod per node)\nkind: DaemonSet\n\
-      spec: ...\n"
+    code: null
   follow_ups:
     en:
     - Why StatefulSet needs a headless service?
@@ -118,12 +109,7 @@ questions:
         or volume mounts? What are the limitations of Secrets (size, etc.)? How to update config without restarting pods?
       ru: Как управлять конфигурацией в Kubernetes? Объясните ConfigMap и Secret. Как внедрить их как переменные окружения
         или смонтировать как тома? Каковы ограничения Secret (размер и т.д.)? Как обновить конфиг без перезапуска подов?
-    code: "# ConfigMap from literal\nkubectl create configmap app-config --from-literal=key1=value1\n\n# Use as volume (auto-updates\
-      \ when ConfigMap changes, but pod may not notice)\nspec:\n  volumes:\n  - name: config\n    configMap: {name: app-config}\n\
-      \  containers:\n  - volumeMounts: [{mountPath: /etc/config, name: config}]\n\n# Use as environment variable (static,\
-      \ requires pod restart)\nspec:\n  containers:\n  - env:\n    - name: KEY1\n      valueFrom:\n        configMapKeyRef:\
-      \ {name: app-config, key: key1}\n\n# Secret (base64 encoded, but not encrypted at rest by default)\nkubectl create secret\
-      \ generic db-secret --from-literal=password=s3cret\n"
+    code: null
   follow_ups:
     en:
     - How to encrypt Secrets at rest in etcd?

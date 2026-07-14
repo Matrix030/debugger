@@ -34,8 +34,7 @@ questions:
       text:
         en: "What is WAL (Write-Ahead Logging) mode in SQLite? What benefits does it provide?"
         ru: "Что такое WAL (Write-Ahead Logging) в SQLite? Какие преимущества даёт?"
-      code: |
-        PRAGMA journal_mode=WAL;
+      code: null
     follow_ups:
       en:
         - "How does WAL improve read concurrency?"
@@ -98,10 +97,7 @@ questions:
       text:
         en: "How do you use SQLite from Python? Compare sqlite3 stdlib and aiosqlite."
         ru: "Как использовать SQLite из Python? Сравните sqlite3 stdlib и aiosqlite."
-      code: |
-        import sqlite3
-        conn = sqlite3.connect("app.db")
-        conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
+      code: null
     follow_ups:
       en:
         - "What is row_factory useful for?"
@@ -143,8 +139,7 @@ questions:
       text:
         en: "How do you backup a SQLite database safely while the app is running?"
         ru: "Как безопасно сделать backup SQLite при работающем приложении?"
-      code: |
-        .backup main backup.db
+      code: null
     follow_ups:
       en:
         - "Why is copying the .db file directly risky during writes?"

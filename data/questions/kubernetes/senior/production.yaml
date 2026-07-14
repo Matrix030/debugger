@@ -18,10 +18,7 @@ questions:
         TLS termination with cert-manager and Let''s Encrypt? Explain Ingress rules (path types: Exact, Prefix, ImplementationSpecific).'
       ru: 'Что такое Ingress Controller? Сравните NGINX Ingress, Traefik и AWS ALB Ingress Controller. Как реализовать терминирование
         TLS с cert-manager и Let''s Encrypt? Объясните правила Ingress (типы путей: Exact, Prefix, ImplementationSpecific).'
-    code: "# Ingress with TLS (cert-manager annotation)\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  annotations:\n\
-      \    cert-manager.io/cluster-issuer: letsencrypt-prod\nspec:\n  tls:\n  - hosts: [example.com]\n    secretName: example-tls\n\
-      \  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /api\n        pathType: Prefix\n        backend:\
-      \ {service: {name: api, port: {number: 80}}}\n"
+    code: null
   follow_ups:
     en:
     - How to route WebSocket traffic via Ingress?
@@ -53,12 +50,7 @@ questions:
       ru: 'Объясните безопасность Kubernetes: RBAC (Roles, ClusterRoles, RoleBindings, ClusterRoleBindings), ServiceAccounts,
         PodSecurityStandards (PSP устарел) и PodSecurity admission. Как ограничить привилегии контейнера (securityContext:
         runAsNonRoot, allowPrivilegeEscalation, readOnlyRootFilesystem)?'
-    code: "# Role (namespace-scoped)\nkind: Role\nrules:\n- apiGroups: [\"\"]\n  resources: [\"pods\"]\n  verbs: [\"get\"\
-      , \"list\"]\n\n# RoleBinding\nkind: RoleBinding\nsubjects:\n- kind: ServiceAccount\n  name: my-sa\nroleRef: {kind: Role,\
-      \ name: pod-reader}\n\n# Pod security context\nspec:\n  securityContext:\n    runAsNonRoot: true\n    runAsUser: 1000\n\
-      \  containers:\n  - name: app\n    securityContext:\n      allowPrivilegeEscalation: false\n      readOnlyRootFilesystem:\
-      \ true\n\n# PodSecurity admission (enforce baseline)\nnamespace: default\nlabels:\n  pod-security.kubernetes.io/enforce:\
-      \ baseline\n"
+    code: null
   follow_ups:
     en:
     - What is the difference between Role and ClusterRole?

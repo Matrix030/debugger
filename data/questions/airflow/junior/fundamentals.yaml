@@ -17,9 +17,7 @@ questions:
         Database? How do they interact? What is a DAG and what is its purpose?'
       ru: 'Объясните архитектуру Apache Airflow. Каковы основные компоненты: Scheduler, Webserver, Executor, Worker, Metadata
         Database? Как они взаимодействуют? Что такое DAG и какова его цель?'
-    code: "# A simple DAG definition\nfrom airflow import DAG\nfrom airflow.operators.dummy import DummyOperator\nfrom datetime\
-      \ import datetime\n\nwith DAG('example_dag', start_date=datetime(2024,1,1), schedule_interval='@daily') as dag:\n  \
-      \  start = DummyOperator(task_id='start')\n    end = DummyOperator(task_id='end')\n    start >> end\n"
+    code: null
   follow_ups:
     en:
     - What is the role of the Scheduler? How does it parse DAGs?
@@ -48,11 +46,7 @@ questions:
         etc.). How do Sensors differ from Operators? What is the purpose of Hooks?
       ru: Что такое Operators, Sensors и Hooks в Airflow? Назовите распространённые операторы (BashOperator, PythonOperator,
         SQLExecuteQueryOperator и др.). Чем Sensors отличаются от Operators? Какова цель Hooks?
-    code: "from airflow.operators.bash import BashOperator\nfrom airflow.operators.python import PythonOperator\nfrom airflow.sensors.filesystem\
-      \ import FileSensor\nfrom airflow.providers.postgres.hooks.postgres import PostgresHook\n\ntask_bash = BashOperator(task_id='date',\
-      \ bash_command='date')\n\ndef my_func():\n    hook = PostgresHook(postgres_conn_id='pg_default')\n    data = hook.get_records(sql=\"\
-      SELECT * FROM table\")\n    print(data)\n\ntask_python = PythonOperator(task_id='process', python_callable=my_func)\n\
-      wait_for_file = FileSensor(task_id='wait_for_file', filepath='/tmp/data.csv', poke_interval=30)\n"
+    code: null
   follow_ups:
     en:
     - How to create a custom operator?
@@ -80,12 +74,7 @@ questions:
         chaining. What is the difference between cross-DAG dependencies (ExternalTaskSensor) and trigger DAGs (TriggerDagRunOperator)?
       ru: Как определить зависимости между задачами в Airflow? Объясните операторы bitshift (>>, <<), set_upstream/set_downstream
         и цепочки. В чём разница между зависимостями между DAG (ExternalTaskSensor) и запуском одного DAG из другого (TriggerDagRunOperator)?
-    code: "with DAG(...) as dag:\n    t1 = DummyOperator(task_id='t1')\n    t2 = DummyOperator(task_id='t2')\n    t3 = DummyOperator(task_id='t3')\n\
-      \    t4 = DummyOperator(task_id='t4')\n\n# Bitshift syntax\nt1 >> [t2, t3] >> t4\n# Equivalent: t1.set_downstream(t2);\
-      \ t2.set_upstream(t1)\n\n# Cross-DAG dependencies: wait for another DAG's task\nExternalTaskSensor(\n    task_id='wait_for_dag1',\n\
-      \    external_dag_id='dag1',\n    external_task_id='final_task',\n    allowed_states=['success']\n)\n\n# Trigger a DAG\
-      \ from another DAG\nTriggerDagRunOperator(\n    task_id='trigger_dag2',\n    trigger_dag_id='dag2',\n    conf={'key':\
-      \ 'value'}\n)\n"
+    code: null
   follow_ups:
     en:
     - What are dynamic task mappings (map, expand) in Airflow 2.3+?

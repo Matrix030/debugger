@@ -13,9 +13,7 @@ questions:
       text:
         en: "How does Redis Pub/Sub work? What are its delivery guarantees?"
         ru: "Как работает Redis Pub/Sub? Какие гарантии доставки?"
-      code: |
-        PUBLISH channel:orders '{"id": 1}'
-        SUBSCRIBE channel:orders
+      code: null
     follow_ups:
       en:
         - "What happens if no subscriber is listening?"
@@ -57,11 +55,7 @@ questions:
       text:
         en: "How do Redis transactions (MULTI/EXEC) work? What is WATCH?"
         ru: "Как работают транзакции Redis (MULTI/EXEC)? Что такое WATCH?"
-      code: |
-        WATCH balance:1
-        MULTI
-        DECRBY balance:1 100
-        EXEC
+      code: null
     follow_ups:
       en:
         - "What happens if watched key changes before EXEC?"
@@ -103,9 +97,7 @@ questions:
       text:
         en: "What happens when Redis reaches maxmemory? Explain eviction policies."
         ru: "Что происходит при достижении maxmemory в Redis? Объясните eviction policies."
-      code: |
-        maxmemory 256mb
-        maxmemory-policy allkeys-lru
+      code: null
     follow_ups:
       en:
         - "What is the difference between volatile-lru and allkeys-lru?"
@@ -147,9 +139,7 @@ questions:
       text:
         en: "What are Redis Streams? How do consumer groups work?"
         ru: "Что такое Redis Streams? Как работают consumer groups?"
-      code: |
-        XADD events * user_id 1 action login
-        XREADGROUP GROUP workers consumer1 STREAMS events >
+      code: null
     follow_ups:
       en:
         - "How is XACK used?"

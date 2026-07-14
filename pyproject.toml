@@ -77,5 +77,6 @@ testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
+    "pytest-cov>=7.1.0",
     "types-tqdm>=4.67.3.20260518",
 ]

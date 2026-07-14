@@ -18,14 +18,7 @@ questions:
       ru: 'Как тестировать DAG в Airflow? Объясните: валидация DAG (airflow dags test), unit-тестирование с pytest, мокирование
         операторов/хуков, использование DagBag для тестов загрузки. Как протестировать зависимости задач без запуска внешних
         систем?'
-    code: "# test_dag.py\nfrom airflow.models import DagBag\n\ndef test_dag_loaded():\n    dag_bag = DagBag(dag_folder='/path/to/dags')\n\
-      \    assert dag_bag.dags['my_dag'] is not None\n    assert not dag_bag.import_errors\n\ndef test_dag_structure():\n\
-      \    dag = dag_bag.get_dag('my_dag')\n    assert dag.task_dict.keys() == {'t1', 't2', 't3'}\n    assert dag.task_dict['t1'].downstream_task_ids\
-      \ == {'t2'}\n\n# Using pytest with Airflow's test utilities\nfrom airflow.utils.dag_cycle_tester import check_cycle\n\
-      \ndef test_no_cycle():\n    dag = create_dag()\n    check_cycle(dag)  # raises if cycle\n\n# Test task with mocked hook\n\
-      from unittest.mock import patch\ndef test_task():\n    with patch('airflow.providers.postgres.hooks.postgres.PostgresHook.run')\
-      \ as mock_run:\n        task = PythonOperator(task_id='test', python_callable=lambda: None)\n        task.execute(context={'ds':\
-      \ '2024-01-01'})\n        mock_run.assert_called_once()\n"
+    code: null
   follow_ups:
     en:
     - How to test sensor logic (timeout, poke interval)?
@@ -57,12 +50,7 @@ questions:
       ru: Как мониторить состояние и производительность Airflow? Объясните метрики, передаваемые через StatsD (с приёмником
         Prometheus), отслеживание длительности DAG, сбоев задач, отставания планировщика. Как настроить оповещения о зависших
         DAG, heartbeat планировщика и длине очереди Celery? Какова цель health endpoint в Airflow?
-    code: "# airflow.cfg for metrics\n[metrics]\nstatsd_on = True\nstatsd_host = localhost\nstatsd_port = 8125\nstatsd_prefix\
-      \ = airflow\n\n# Expose Prometheus endpoint (using statsd-exporter or native Prometheus)\n[metrics]\nmetrics_backend\
-      \ = statsd\nstatsd_host = prometheus-statsd-exporter:9125\n\n# Health endpoint\n# GET /health\n{\n  \"metadatabase\"\
-      : {\"status\": \"healthy\"},\n  \"scheduler\": {\"status\": \"healthy\", \"latest_scheduler_heartbeat\": \"2024-01-01T00:00:00Z\"\
-      }\n}\n\n# Key metrics to monitor\n# dag_processing.processes (scheduler health)\n# scheduler.tasks.running, .queued,\
-      \ .starving\n# ti.finish.{dag_id}.{task_id}.{status}\n# celery.worker.consumed, .queue_length (if CeleryExecutor)\n"
+    code: null
   follow_ups:
     en:
     - How to detect a DAG that hasn't run for X hours?
@@ -95,42 +83,7 @@ questions:
       ru: 'Как защитить развёртывание Airflow? Объясните встроенный RBAC (управление доступом на основе ролей): роли (Admin,
         User, Op, Viewer), разрешения на DAG и ресурсы. Как интегрировать с LDAP, OAuth (Google, GitHub) или OpenID Connect?
         Для чего используется `fernet_key`?'
-    code: '# airflow.cfg authentication
-
-      [webserver]
-
-      authenticate = True
-
-      auth_backend = airflow.api.auth.backend.basic_auth
-
-      # or
-
-      auth_backend = airflow.providers.fab.auth_backend.oauth
-
-
-      # OAuth configuration (e.g., GitHub)
-
-      [oauth]
-
-      enabled = True
-
-      oauth_provider = github
-
-      client_id = xxx
-
-      client_secret = xxx
-
-
-      # RBAC: custom role definition via CLI or UI
-
-      airflow roles add-permission --role MyRole --resource DAG:example_dag --can_edit
-
-
-      # Fernet key for encrypting connection passwords in DB
-
-      fernet_key = cXVhbnR1bXNreWlzZWN1cmVhbmRvbmdzdHJpbmcxMjM=
-
-      '
+    code: null
   follow_ups:
     en:
     - How to restrict access to specific DAGs per team?

@@ -18,18 +18,7 @@ questions:
         Explain the new controller quorum and metadata topic.
       ru: Какова была роль ZooKeeper в Kafka? Какие проблемы он вызывал? Как KRaft (Kafka Raft) заменяет ZooKeeper? Объясните
         новый кворум контроллеров и мета-топик.
-    code: '# Old: ZooKeeper for broker metadata, controller election, cluster membership
-
-      # New: KRaft - controllers run Raft consensus, store metadata in internal topic @metadata
-
-
-      # KRaft mode config
-
-      process.roles=broker,controller
-
-      controller.quorum.voters=1@k1:9093,2@k2:9093,3@k3:9093
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the metadata topic and how is it replicated?
@@ -60,20 +49,7 @@ questions:
         and windowed joins. When to use ksqlDB vs Kafka Streams?
       ru: Что такое Kafka Streams и ksqlDB? Чем они отличаются от обычных консьюмеров? Объясните KStream, KTable, GlobalKTable
         и оконные джойны. Когда использовать ksqlDB вместо Kafka Streams?
-    code: '# Kafka Streams: Java library (also Python via Faust or streamz)
-
-      KStream<String, Order> orders = builder.stream("orders");
-
-      KTable<String, User> users = builder.table("users");
-
-      orders.join(users, (order, user) -> order.withUserInfo(user));
-
-
-      # ksqlDB: SQL engine on Kafka
-
-      SELECT user_id, COUNT(*) FROM orders WINDOW TUMBLING (SIZE 1 MINUTE) GROUP BY user_id;
-
-      '
+    code: null
   follow_ups:
     en:
     - What is state store and changelog topic?

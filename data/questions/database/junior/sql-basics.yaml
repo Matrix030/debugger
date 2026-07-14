@@ -13,10 +13,7 @@ questions:
       text:
         en: "Explain the basic structure of a SELECT query. How does WHERE clause filter data?"
         ru: "Объясните базовую структуру запроса SELECT. Как предложение WHERE фильтрует данные?"
-      code: |
-        SELECT column1, column2
-        FROM table_name
-        WHERE condition;
+      code: null
     follow_ups:
       en:
         - "What is the order of execution of SQL clauses?"
@@ -40,10 +37,7 @@ questions:
       text:
         en: "How do INSERT, UPDATE, and DELETE statements work? What are the risks of each?"
         ru: "Как работают операторы INSERT, UPDATE и DELETE? Какие риски у каждого?"
-      code: |
-        INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
-        UPDATE users SET email = 'new@example.com' WHERE id = 1;
-        DELETE FROM users WHERE id = 1;
+      code: null
     follow_ups:
       en:
         - "What happens if you omit the WHERE clause on UPDATE or DELETE?"
@@ -67,10 +61,7 @@ questions:
       text:
         en: "What are the different types of JOINs in SQL? Explain INNER, LEFT, RIGHT, and FULL OUTER JOIN."
         ru: "Какие типы JOIN существуют в SQL? Объясните INNER, LEFT, RIGHT и FULL OUTER JOIN."
-      code: |
-        SELECT u.name, o.amount
-        FROM users u
-        INNER JOIN orders o ON u.id = o.user_id;
+      code: null
     follow_ups:
       en:
         - "What rows does each JOIN type return?"
@@ -94,12 +85,7 @@ questions:
       text:
         en: "How does GROUP BY work with aggregate functions? What is the difference between WHERE and HAVING?"
         ru: "Как GROUP BY работает с агрегатными функциями? В чём разница между WHERE и HAVING?"
-      code: |
-        SELECT department, COUNT(*) as emp_count, AVG(salary) as avg_salary
-        FROM employees
-        WHERE status = 'active'
-        GROUP BY department
-        HAVING COUNT(*) > 5;
+      code: null
     follow_ups:
       en:
         - "What aggregate functions does SQL provide (COUNT, SUM, AVG, MIN, MAX)?"
@@ -123,11 +109,7 @@ questions:
       text:
         en: "How do ORDER BY, LIMIT, and DISTINCT work in SQL queries?"
         ru: "Как работают ORDER BY, LIMIT и DISTINCT в SQL-запросах?"
-      code: |
-        SELECT DISTINCT department
-        FROM employees
-        ORDER BY department DESC
-        LIMIT 10;
+      code: null
     follow_ups:
       en:
         - "What is the default sort order in ORDER BY?"

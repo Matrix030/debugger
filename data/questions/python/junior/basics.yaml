@@ -148,21 +148,7 @@ questions:
       text:
         en: "What is the difference between an interpreter and a compiler? How is Python code executed and what processes occur when it runs?"
         ru: "В чём разница между интерпретатором и компилятором? Как выполняется Python-код и какие процессы происходят при его запуске?"
-      code: |
-        # Python is interpreted, but has compilation steps
-        
-        # 1. Source code (.py file)
-        # 2. Python compiler generates bytecode (.pyc)
-        # 3. Python Virtual Machine (PVM) executes bytecode
-        # 4. Result
-        
-        # Check bytecode
-        import dis
-        
-        def add(a, b):
-            return a + b
-        
-        print(dis.dis(add))
+      code: null
     
     follow_ups:
       en:
@@ -193,31 +179,7 @@ questions:
       text:
         en: "How does Python manage memory allocation and deallocation? How does the garbage collector work?"
         ru: "Каким образом Python управляет выделением и освобождением памяти? Как работает сборщик мусора (garbage collector)?"
-      code: |
-        import gc
-        import sys
-        
-        # Reference counting
-        a = []  # ref count = 1
-        b = a   # ref count = 2
-        del b   # ref count = 1
-        
-        # Circular reference
-        class Node:
-            def __init__(self):
-                self.parent = None
-                self.children = []
-        
-        parent = Node()
-        child = Node()
-        parent.children.append(child)
-        child.parent = parent  # Circular reference
-        
-        # Force garbage collection
-        gc.collect()
-        
-        # Check GC thresholds
-        print(gc.get_threshold())
+      code: null
     
     follow_ups:
       en:
@@ -249,39 +211,7 @@ questions:
       text:
         en: "What are magic (dunder) methods? Which of them are called when an instance of a class is created? Which magic methods does a context manager implement (the with protocol) and why is it used?"
         ru: "Что такое магические (dunder) методы? Какие из них вызываются при создании экземпляра класса? Какие магические методы реализует контекстный менеджер (протокол with) и для чего он нужен?"
-      code: |
-        # Magic methods for instance creation
-        class Example:
-            def __new__(cls, *args, **kwargs):
-                print("__new__ called")
-                instance = super().__new__(cls)
-                return instance
-            
-            def __init__(self, value):
-                print("__init__ called")
-                self.value = value
-        
-        # Context manager protocol
-        class FileManager:
-            def __init__(self, filename, mode):
-                self.filename = filename
-                self.mode = mode
-                self.file = None
-            
-            def __enter__(self):
-                print("Opening file")
-                self.file = open(self.filename, self.mode)
-                return self.file
-            
-            def __exit__(self, exc_type, exc_val, exc_tb):
-                print("Closing file")
-                if self.file:
-                    self.file.close()
-                # Return True to suppress exceptions
-        
-        # Using context manager
-        with FileManager("test.txt", "w") as f:
-            f.write("Hello")
+      code: null
     
     follow_ups:
       en:

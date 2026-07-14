@@ -17,10 +17,7 @@ questions:
         to create a simple graph panel with a Prometheus query and set basic visualization options (legend, axes, thresholds)?
       ru: Что такое Grafana? Объясните концепцию дашбордов, панелей, строк и источников данных (Prometheus, Loki и др.). Как
         создать простой график с Prometheus-запросом и настроить базовые параметры визуализации (легенда, оси, пороги)?
-    code: "# Dashboard JSON model (excerpt)\n{\n  \"title\": \"My Dashboard\",\n  \"panels\": [\n    {\n      \"title\": \"\
-      CPU Usage\",\n      \"targets\": [\n        { \"expr\": \"rate(node_cpu_seconds_total{mode='user'}[5m])\", \"legendFormat\"\
-      : \"user\" }\n      ],\n      \"thresholds\": [\n        { \"color\": \"red\", \"value\": 80, \"op\": \"gt\" }\n   \
-      \   ]\n    }\n  ]\n}\n"
+    code: null
   follow_ups:
     en:
     - What is the difference between Stat, Gauge, and Time series panels?
@@ -51,30 +48,7 @@ questions:
       ru: 'Как использовать переменные Grafana (шаблонизация)? Объясните типы переменных: query, interval, custom, constant.
         Покажите пример переменной, которая получает все экземпляры из Prometheus, и используйте её в запросе панели. Как
         использовать $__rate_interval и $__interval?'
-    code: '# Variable of type Query
-
-      Name: instance
-
-      Query label_values(node_cpu_seconds_total, instance)
-
-
-      # Panel query using variable
-
-      rate(node_cpu_seconds_total{instance=~"$instance", mode="user"}[$__rate_interval])
-
-
-      # Interval variable (auto-adjusted)
-
-      rate(http_requests_total[$__interval])
-
-
-      # Common system variables
-
-      $__rate_interval: adjusted for proper rate alignment (>= $__interval, at least 4x scrape interval)
-
-      $__interval: automatically chosen based on time range and screen width
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the difference between $__interval and $__rate_interval?
@@ -103,32 +77,7 @@ questions:
         Clock, or Infinity data source)? What are the risks of using custom plugins?
       ru: Какие типы плагинов существуют в Grafana (источники данных, панели, приложения)? Как установить плагин сообщества
         (например, Pie Chart, Clock или Infinity data source)? Каковы риски использования пользовательских плагинов?
-    code: '# Install plugin via CLI
-
-      grafana-cli plugins install grafana-piechart-panel
-
-
-      # Install from environment variable
-
-      GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel
-
-
-      # Provision plugin in Grafana config
-
-      [plugins]
-
-      allow_loading_unsigned_plugins = my-custom-panel
-
-
-      # Example of using Infinity data source (query REST APIs)
-
-      type: infinity
-
-      url: https://api.example.com/data
-
-      source: json
-
-      '
+    code: null
   follow_ups:
     en:
     - How to create a custom panel plugin?

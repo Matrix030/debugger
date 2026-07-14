@@ -32,19 +32,21 @@
     }
 
     function sendTimeout() {
-        if (timedOutSent || !getWs) {
+        if (timedOutSent) {
             return;
         }
-        if (window.isSubmitting) {
+        timedOutSent = true;
+
+        if (typeof window.grillkitOnTimerExpired === "function") {
+            window.grillkitOnTimerExpired();
+        }
+
+        if (!getWs) {
             return;
         }
         const socket = getWs();
         if (!socket || socket.readyState !== WebSocket.OPEN) {
             return;
-        }
-        timedOutSent = true;
-        if (typeof window.grillkitOnTimerExpired === "function") {
-            window.grillkitOnTimerExpired();
         }
         socket.send(
             JSON.stringify({

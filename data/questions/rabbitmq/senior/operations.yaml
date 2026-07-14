@@ -17,28 +17,7 @@ questions:
         and batch get, TCP settings, and lazy queues vs in-memory.
       ru: Как настроить RabbitMQ для высокой пропускной способности? Объясните контроль потока (credit-based), сигналы памяти,
         лимит свободного места на диске, prefetch и batch get, настройки TCP, а также ленивые очереди против in-memory.
-    code: '# rabbitmq.conf
-
-      vm_memory_high_watermark.absolute = 2GB
-
-      vm_memory_high_watermark_paging_ratio = 0.8
-
-      disk_free_limit.absolute = 2GB
-
-
-      # Increase file descriptors limit (ulimit -n 65536)
-
-      # Use heartbeat to detect dead connections
-
-
-      # Client-side: use publisher confirms asynchronously, set prefetch=100-1000 (not 1)
-
-      channel.basic_qos(prefetch_count=100)
-
-
-      # For streaming: use basic.get with multiple messages (not recommended, use consume)
-
-      '
+    code: null
   follow_ups:
     en:
     - What is the impact of persistent messages on performance?

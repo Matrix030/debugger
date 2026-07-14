@@ -76,11 +76,7 @@ questions:
       text:
         en: "How does list slicing work in Python? What are common list methods for manipulation?"
         ru: "Как работают срезы (slicing) списков в Python? Какие есть распространённые методы для работы со списками?"
-      code: |
-        nums = [0, 1, 2, 3, 4, 5]
-        nums[1:4]    # ???
-        nums[::-1]   # ???
-        nums[::2]    # ???
+      code: null
     follow_ups:
       en:
         - "What is the time complexity of list.append() vs list.insert()?"
@@ -224,17 +220,6 @@ questions:
         ru: "Как устроены словари (dict) и какие объекты могут служить ключами? Что представляет собой хэш-таблица и возможно ли, чтобы разные объекты имели одинаковый хэш?"
       code: null
     follow_ups:
-      en:
-        - "Why must dictionary keys be hashable?"
-        - "What happens when two keys have the same hash (collision)?"
-        - "How does Python handle hash collisions in dictionaries?"
-        - "Can a list be used as a dictionary key? Why or why not?"
-      ru:
-        - "Почему ключи словаря должны быть хешируемыми?"
-        - "Что происходит, когда два ключа имеют одинаковый хэш (коллизия)?"
-        - "Как Python обрабатывает коллизии хэшей в словарях?"
-        - "Можно ли использовать список как ключ словаря? Почему да или нет?"
-    expected_points:
       - "Dictionaries are implemented as hash tables (open addressing with probing)"
       - "Keys must be hashable (have __hash__ method) and immutable (or effectively immutable)"
       - "Hash collisions are possible; Python handles them with probing (linear or quadratic)"

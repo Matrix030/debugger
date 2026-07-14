@@ -19,13 +19,7 @@ questions:
       ru: 'Объясните систему оповещения Grafana (unified). Чем она отличается от старых оповещений дашбордов? Опишите компоненты:
         запросы к источникам данных, выражения (Reduce, Math, Resample), вычисление правила оповещения, точки контакта, политики
         уведомлений, заглушки (silences).'
-    code: "# Grafana alert rule (via API or UI)\n{\n  \"title\": \"High CPU Alert\",\n  \"condition\": \"C\",\n  \"data\"\
-      : [\n    { \"refId\": \"A\", \"queryType\": \"range\", \"datasourceUid\": \"prometheus\",\n      \"model\": { \"expr\"\
-      : \"node_cpu_seconds_total{mode='user'}\" } },\n    { \"refId\": \"B\", \"type\": \"reduce\", \"reducer\": \"mean\"\
-      \ },\n    { \"refId\": \"C\", \"type\": \"threshold\", \"conditions\": [{ \"evaluator\": { \"type\": \"gt\", \"params\"\
-      : [0.8] } }] }\n  ],\n  \"for\": \"5m\",\n  \"annotations\": { \"summary\": \"CPU high on {{ $labels.instance }}\" }\n\
-      }\n\n# Contact point (Slack)\n{\n  \"type\": \"slack\",\n  \"settings\": { \"url\": \"https://hooks.slack.com/...\"\
-      , \"text\": \"Alert: {{ .Annotations.summary }}\" }\n}\n"
+    code: null
   follow_ups:
     en:
     - How to handle multi-dimensional alerts (one alert per series)?
@@ -55,12 +49,7 @@ questions:
         resources using YAML files. How to set up folder structure and dashboard version control with Git?
       ru: Что такое provisioning в Grafana (как код)? Объясните, как настроить источники данных, дашборды (через JSON) и ресурсы
         оповещения с помощью YAML файлов. Как настроить структуру папок и версионирование дашбордов с Git?
-    code: "# provisioning/datasources/prometheus.yaml\napiVersion: 1\ndatasources:\n  - name: Prometheus\n    type: prometheus\n\
-      \    access: proxy\n    url: http://prometheus:9090\n    isDefault: true\n\n# provisioning/dashboards/default.yaml\n\
-      apiVersion: 1\nproviders:\n  - name: 'default'\n    folder: 'General'\n    type: file\n    options:\n      path: /var/lib/grafana/dashboards\n\
-      \n# provisioning/alerting/contact-points.yaml\napiVersion: 1\ncontactPoints:\n  - name: slack\n    receivers:\n    \
-      \  - type: slack\n        settings:\n          url: https://hooks.slack.com/...\n\n# Dashboard JSON file (exported from\
-      \ UI)\n# store in git, then synced to /dashboards folder\n"
+    code: null
   follow_ups:
     en:
     - How to handle dashboard changes without overwriting user modifications?

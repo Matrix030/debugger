@@ -13,8 +13,7 @@ questions:
       text:
         en: "How do you deploy FastAPI in production with Uvicorn and Gunicorn workers?"
         ru: "Как развернуть FastAPI в продакшене с Uvicorn и Gunicorn workers?"
-      code: |
-        gunicorn main:app -k uvicorn.workers.UvicornWorker -w 4 --bind 0.0.0.0:8000
+      code: null
     follow_ups:
       en:
         - "How do you choose the number of workers?"

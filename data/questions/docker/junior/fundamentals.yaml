@@ -17,23 +17,7 @@ questions:
         and registries (Docker Hub).
       ru: Что такое Docker? Чем контейнер отличается от виртуальной машины (ВМ)? Объясните концепции образов, контейнеров
         и регистри (Docker Hub).
-    code: '# Build image from Dockerfile
-
-      docker build -t myapp:latest .
-
-
-      # Run container
-
-      docker run -d -p 80:80 --name myapp myapp:latest
-
-
-      # Push to registry
-
-      docker tag myapp:latest myuser/myapp:v1
-
-      docker push myuser/myapp:v1
-
-      '
+    code: null
   follow_ups:
     en:
     - What are the main namespaces and cgroups used by Docker?
@@ -63,33 +47,7 @@ questions:
         the difference between CMD and ENTRYPOINT? Show a multi-stage build example.'
       ru: 'Объясните ключевые инструкции Dockerfile: FROM, RUN, COPY, ADD, CMD, ENTRYPOINT, EXPOSE, ENV, WORKDIR. В чём разница
         между CMD и ENTRYPOINT? Приведите пример многоступенчатой сборки.'
-    code: '# Multi-stage build example
-
-      FROM golang:1.20 AS builder
-
-      WORKDIR /app
-
-      COPY . .
-
-      RUN go build -o myapp .
-
-
-      FROM alpine:latest
-
-      WORKDIR /root/
-
-      COPY --from=builder /app/myapp .
-
-      CMD ["./myapp"]
-
-
-      # Difference: ENTRYPOINT defines executable, CMD provides defaults
-
-      ENTRYPOINT ["python"]
-
-      CMD ["app.py"]   # user can override CMD, but ENTRYPOINT stays
-
-      '
+    code: null
   follow_ups:
     en:
     - Why is COPY preferred over ADD in most cases?
@@ -120,28 +78,7 @@ questions:
         (creation, backup, removal). When to use named volumes vs bind mounts?
       ru: Как Docker работает с постоянными данными? Сравните тома (volumes), bind-монтирования и tmpfs-монтирования. Объясните
         жизненный цикл тома (создание, резервное копирование, удаление). Когда использовать именованные тома вместо bind-монтирований?
-    code: '# Named volume
-
-      docker volume create mydata
-
-      docker run -v mydata:/data myapp
-
-
-      # Bind mount (host directory)
-
-      docker run -v /host/path:/container/path myapp
-
-
-      # tmpfs (in-memory, not persisted)
-
-      docker run --tmpfs /tmp myapp
-
-
-      # Backup volume
-
-      docker run --rm -v mydata:/source -v $(pwd):/backup alpine cp -a /source /backup
-
-      '
+    code: null
   follow_ups:
     en:
     - How to share volumes between containers?
