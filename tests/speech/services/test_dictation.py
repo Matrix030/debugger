@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for dictation speech recognition."""
 
-
 import numpy as np
 import pytest
 
