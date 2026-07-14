@@ -10,7 +10,11 @@ Work in progress is accumulated under `[Unreleased]`; on release, that section b
 
 ### Changed
 
+- **Question bank overhaul** — restructured and expanded question sets across all tracks (Python, Database, Airflow, Docker, Kubernetes, Observability, Kafka, RabbitMQ); updated questions map
+
 ### Fixed
+
+- **Session timeout** — fixed timer handling that caused premature session expiration or stuck rounds
 
 ### Removed
 
