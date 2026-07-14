@@ -10,6 +10,16 @@ Work in progress is accumulated under `[Unreleased]`; on release, that section b
 
 ### Changed
 
+### Fixed
+
+### Removed
+
+## 2026.7.14
+
+### Added
+
+### Changed
+
 - **Question bank overhaul** — restructured and expanded question sets across all tracks (Python, Database, Airflow, Docker, Kubernetes, Observability, Kafka, RabbitMQ); updated questions map
 
 ### Fixed
