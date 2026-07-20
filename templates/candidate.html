@@ -29,6 +29,9 @@
         </div>
     </section>
 
+    <div id="split-gutter" class="split-gutter" role="separator" aria-orientation="vertical"
+         title="Drag to resize; double-click to reset"></div>
+
     <section class="editor-pane" aria-label="Code editor">
         <div class="editor-shell">
             <div class="editor-shell__header">
@@ -36,6 +39,8 @@
                 <span id="save-indicator" class="editor-shell__saved" hidden>Saved locally</span>
             </div>
             <div id="code-editor" class="editor-shell__monaco"></div>
+            <div id="results-gutter" class="results-gutter" role="separator" aria-orientation="horizontal"
+                 title="Drag to resize; double-click to reset" hidden></div>
             <div id="results-console" class="results-console" hidden>
                 <div class="results-console__header">
                     <span id="results-title">Results</span>
@@ -58,6 +63,7 @@
 
 {% block scripts %}
 <script src="/static/js/editor.js?v={{ static_version('js/editor.js') }}"></script>
+<script src="/static/js/layout.js?v={{ static_version('js/layout.js') }}"></script>
 <script src="/static/js/timer.js?v={{ static_version('js/timer.js') }}"></script>
 <script src="/static/js/candidate.js?v={{ static_version('js/candidate.js') }}"></script>
 {% endblock %}

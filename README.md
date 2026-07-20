@@ -10,7 +10,7 @@ features removed and code execution moved into a hardened local sandbox containe
 
 ## What you get
 
-- Split-pane interview UI: problem description left, Python editor right
+- Split-pane interview UI: problem description left, Python editor right — both panes and the results console are drag-resizable (double-click a divider to reset)
 - **Run Code** — executes the visible (sample) tests only
 - **Submit** — executes visible **and** hidden tests; hidden results show only pass/fail
 - **Reset Code** — restores the original buggy starter code

@@ -246,9 +246,88 @@ body {
 
 .workspace {
     display: grid;
-    grid-template-columns: minmax(340px, 2fr) 3fr;
+    grid-template-columns: clamp(280px, var(--split-left, 40%), 75%) 6px minmax(0, 1fr);
     height: 100%;
     min-height: 0;
+}
+
+/* ---------- Resizable gutters ---------- */
+
+.split-gutter {
+    cursor: col-resize;
+    background: transparent;
+    position: relative;
+    transition: background-color 0.15s ease;
+}
+
+.split-gutter::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 34px;
+    border-radius: 999px;
+    background: var(--border);
+}
+
+.split-gutter:hover,
+body.is-resizing--col .split-gutter {
+    background: var(--primary-soft);
+}
+
+.split-gutter:hover::after,
+body.is-resizing--col .split-gutter::after {
+    background: var(--primary);
+}
+
+.results-gutter {
+    height: 6px;
+    flex-shrink: 0;
+    cursor: row-resize;
+    background: transparent;
+    border-top: 1px solid var(--border-subtle);
+    position: relative;
+    transition: background-color 0.15s ease;
+}
+
+.results-gutter[hidden] {
+    display: none;
+}
+
+.results-gutter::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 34px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--border);
+}
+
+.results-gutter:hover,
+body.is-resizing--row .results-gutter {
+    background: var(--primary-soft);
+}
+
+.results-gutter:hover::after,
+body.is-resizing--row .results-gutter::after {
+    background: var(--primary);
+}
+
+body.is-resizing {
+    user-select: none;
+}
+
+body.is-resizing--col {
+    cursor: col-resize;
+}
+
+body.is-resizing--row {
+    cursor: row-resize;
 }
 
 .problem-pane {
@@ -279,6 +358,10 @@ body {
     .workspace {
         grid-template-columns: 1fr;
         height: auto;
+    }
+
+    .split-gutter {
+        display: none;
     }
 
     .problem-pane {
@@ -530,7 +613,7 @@ body {
 /* ---------- Results console ---------- */
 
 .results-console {
-    border-top: 1px solid var(--border-subtle);
+    /* The results gutter above provides the top border and resize handle. */
     background: var(--bg-secondary);
     max-height: 45%;
     display: flex;
