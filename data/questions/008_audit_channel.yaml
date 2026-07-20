@@ -1,0 +1,155 @@
+id: audit-channel
+title: Audit Log Channel Inheritance
+difficulty: medium
+tags: [oop, inheritance, super-init]
+description: |
+  Your compliance platform ships audit events to long-term storage through
+  transport channels. The plain `Channel` works fine and has for years:
+  it buffers each message into its log and counts deliveries. For regulated
+  tenants a new `EncryptedChannel` subclass was added that wraps every message
+  with its cipher label before it hits the log.
+
+  The rollout went badly. The moment the encrypted transport is selected, the
+  shipper crashes with `AttributeError` before delivering a single event —
+  even an idle encrypted channel cannot report its own name. A code reviewer
+  also left a comment on the subclass's `send` override: "if this ever runs,
+  every audit event will land in the log twice, once wrapped and once in
+  plaintext — a plaintext copy on an encrypted channel is a compliance
+  violation on its own."
+
+  ### Task
+
+  - Fix `EncryptedChannel` so `deliver_messages(messages, encrypted)` works on
+    both paths. Do **not** change the signature of `deliver_messages`, the
+    `Channel` base class, or the method names.
+
+  ### Assumptions
+
+  - `messages` is a list of strings; it may be empty. Message text is
+    arbitrary and may itself contain brackets.
+  - `encrypted` is a boolean selecting which channel class to build.
+  - The plain channel is named `audit-plain`; the encrypted one is named
+    `audit-secure` and uses the fixed cipher label `aes-256-gcm`.
+
+  ### Requirements
+
+  - Return `{"channel": name, "delivered": n, "log": [...]}`.
+  - `delivered` must equal the number of messages sent.
+  - Each message must appear in the log **exactly once**, in send order.
+  - On the encrypted channel every log entry is the message prefixed with
+    `"[aes-256-gcm] "`; no plaintext copy may ever appear in its log.
+  - On the plain channel, log entries are the messages verbatim.
+  - Constructing an encrypted channel and sending zero messages must work and
+    report `delivered: 0` with an empty log.
+constraints:
+  - "0 <= len(messages) <= 10^4"
+  - "1 <= len(message) <= 10^3 per message"
+function_name: deliver_messages
+language: python
+starter_code: |
+  class Channel:
+      def __init__(self, name):
+          self.name = name
+          self.log = []
+          self.delivered = 0
+
+      def send(self, message):
+          self.log.append(message)
+          self.delivered += 1
+
+  class EncryptedChannel(Channel):
+      def __init__(self, name):
+          self.cipher = "aes-256-gcm"
+
+      def send(self, message):
+          self.log.append("[" + self.cipher + "] " + message)
+          super().send(message)
+
+  def deliver_messages(messages, encrypted):
+      if encrypted:
+          channel = EncryptedChannel("audit-secure")
+      else:
+          channel = Channel("audit-plain")
+      for message in messages:
+          channel.send(message)
+      return {
+          "channel": channel.name,
+          "delivered": channel.delivered,
+          "log": channel.log,
+      }
+visible_tests:
+  - name: plain channel delivers verbatim
+    args: [["login ok", "logout"], false]
+    expected: {"channel": "audit-plain", "delivered": 2, "log": ["login ok", "logout"]}
+  - name: encrypted channel wraps each message once
+    args: [["login ok"], true]
+    expected: {"channel": "audit-secure", "delivered": 1, "log": ["[aes-256-gcm] login ok"]}
+  - name: encrypted channel keeps send order without duplicates
+    args: [["evt-1", "evt-2"], true]
+    expected: {"channel": "audit-secure", "delivered": 2, "log": ["[aes-256-gcm] evt-1", "[aes-256-gcm] evt-2"]}
+hidden_tests:
+  - name: idle encrypted channel still reports itself
+    args: [[], true]
+    expected: {"channel": "audit-secure", "delivered": 0, "log": []}
+  - name: idle plain channel reports zero deliveries
+    args: [[], false]
+    expected: {"channel": "audit-plain", "delivered": 0, "log": []}
+  - name: burst of encrypted messages counts correctly
+    args: [["m1", "m2", "m3", "m4"], true]
+    expected: {"channel": "audit-secure", "delivered": 4, "log": ["[aes-256-gcm] m1", "[aes-256-gcm] m2", "[aes-256-gcm] m3", "[aes-256-gcm] m4"]}
+  - name: plain channel does not mangle bracketed text
+    args: [["[urgent] disk full"], false]
+    expected: {"channel": "audit-plain", "delivered": 1, "log": ["[urgent] disk full"]}
+  - name: encrypted message containing brackets wraps cleanly
+    args: [["user=[root] action=su"], true]
+    expected: {"channel": "audit-secure", "delivered": 1, "log": ["[aes-256-gcm] user=[root] action=su"]}
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **`super().__init__` never called** — `EncryptedChannel.__init__` sets only
+    `self.cipher`, so `name`, `log`, and `delivered` are never created on the
+    instance. Merely reading `channel.name` on an idle encrypted channel raises
+    `AttributeError`, and the first `send` dies on `self.log`. Overriding
+    `__init__` replaces the base initializer; it does not extend it. Fix: call
+    `super().__init__(name)` first, then set `self.cipher`.
+  - **Double delivery in the `send` override** — the override appends the
+    wrapped message itself **and** calls `super().send(message)`, which appends
+    the plaintext again (and is the only place `delivered` is incremented). Once
+    the `__init__` bug is fixed, every message lands twice — wrapped then
+    plaintext — exactly the compliance violation the reviewer flagged, with
+    `len(log) == 2 * delivered`. Fix: delegate exactly once with the wrapped
+    payload — `super().send("[" + self.cipher + "] " + message)` — so the base
+    class remains the single owner of buffering and counting.
+solution: |
+  class Channel:
+      def __init__(self, name):
+          self.name = name
+          self.log = []
+          self.delivered = 0
+
+      def send(self, message):
+          self.log.append(message)
+          self.delivered += 1
+
+  class EncryptedChannel(Channel):
+      def __init__(self, name):
+          super().__init__(name)
+          self.cipher = "aes-256-gcm"
+
+      def send(self, message):
+          super().send("[" + self.cipher + "] " + message)
+
+  def deliver_messages(messages, encrypted):
+      if encrypted:
+          channel = EncryptedChannel("audit-secure")
+      else:
+          channel = Channel("audit-plain")
+      for message in messages:
+          channel.send(message)
+      return {
+          "channel": channel.name,
+          "delivered": channel.delivered,
+          "log": channel.log,
+      }
+time_limit_seconds: 5
+memory_limit_mb: 256

@@ -1,0 +1,176 @@
+id: quota-tracker
+title: API Quota Tracker Aliasing
+difficulty: hard
+tags: [oop, aliasing, defensive-copy, mutation]
+description: |
+  Your API gateway enforces per-user request quotas. A `QuotaTracker` is built
+  from the tenant's base limits config (user id -> remaining calls) and every
+  authorized request calls `consume(user)`. To de-risk a billing migration, the
+  gateway runs **two** trackers over the same traffic: the `primary` tracker
+  that actually enforces, and a `shadow` tracker replaying the identical events
+  for the new billing pipeline. Since both replay the same events against the
+  same starting limits, their results must come out identical. Mid-stream, an
+  ops dashboard also grabs a checkpoint of the primary tracker's remaining
+  quotas via `remaining()`.
+
+  Production is a mess. Users are being throttled at roughly **half** their
+  paid quota, primary and shadow disagree even though they saw the same
+  events, the mid-stream checkpoint always equals the *final* state no matter
+  when it was taken, and — worst of all — the tenant's base limits config dict
+  itself is corrupted after every run, so each subsequent run starts from
+  already-drained quotas.
+
+  ### Task
+
+  - Fix `QuotaTracker` so `apply_usage(base_limits, usage_events, checkpoint)`
+    behaves correctly. Do **not** change the signature of `apply_usage` or the
+    `QuotaTracker` method names. The driver logic itself is correct — the
+    defects are in the class.
+
+  ### Assumptions
+
+  - `base_limits` maps user id strings to non-negative integer quotas.
+  - `usage_events` is a list of user id strings; it may reference users absent
+    from `base_limits` (those requests are simply denied).
+  - `0 <= checkpoint <= len(usage_events)`; the checkpoint snapshot is taken
+    just before event index `checkpoint` is processed (or after all events when
+    `checkpoint == len(usage_events)`).
+
+  ### Requirements
+
+  - `consume(user)` returns `True` and decrements the user's remaining quota
+    when it is positive; otherwise returns `False` (a denial).
+  - Each tracker must start from its **own** copy of `base_limits`: primary and
+    shadow must produce identical `remaining()` results and denial counts, and
+    the caller's `base_limits` dict must be returned **unmodified**.
+  - `remaining()` must return a snapshot that does not change when the tracker
+    consumes afterwards — the checkpoint must reflect the state at checkpoint
+    time, not the final state.
+  - Return `{"checkpoint": {...}, "primary": {...}, "shadow": {...},
+    "denied": {"primary": n, "shadow": n}, "base_limits": {...}}`.
+constraints:
+  - "0 <= len(base_limits) <= 10^3"
+  - "0 <= len(usage_events) <= 10^4"
+  - "0 <= quota value <= 10^4"
+  - "0 <= checkpoint <= len(usage_events)"
+function_name: apply_usage
+language: python
+starter_code: |
+  class QuotaTracker:
+      def __init__(self, label, base_limits):
+          self.label = label
+          self.limits = base_limits
+
+      def consume(self, user):
+          if self.limits.get(user, 0) > 0:
+              self.limits[user] -= 1
+              return True
+          return False
+
+      def remaining(self):
+          return self.limits
+
+  def apply_usage(base_limits, usage_events, checkpoint):
+      primary = QuotaTracker("primary", base_limits)
+      shadow = QuotaTracker("shadow", base_limits)
+      denied = {"primary": 0, "shadow": 0}
+      checkpoint_view = None
+      for index, user in enumerate(usage_events):
+          if index == checkpoint:
+              checkpoint_view = primary.remaining()
+          if not primary.consume(user):
+              denied["primary"] += 1
+          if not shadow.consume(user):
+              denied["shadow"] += 1
+      if checkpoint_view is None:
+          checkpoint_view = primary.remaining()
+      return {
+          "checkpoint": checkpoint_view,
+          "primary": primary.remaining(),
+          "shadow": shadow.remaining(),
+          "denied": denied,
+          "base_limits": base_limits,
+      }
+visible_tests:
+  - name: primary and shadow agree and base limits survive
+    args: [{"alice": 2, "bob": 1}, ["alice", "alice", "alice", "bob"], 2]
+    expected: {"checkpoint": {"alice": 0, "bob": 1}, "primary": {"alice": 0, "bob": 0}, "shadow": {"alice": 0, "bob": 0}, "denied": {"primary": 1, "shadow": 1}, "base_limits": {"alice": 2, "bob": 1}}
+  - name: checkpoint at start shows untouched quotas
+    args: [{"carol": 1}, ["carol"], 0]
+    expected: {"checkpoint": {"carol": 1}, "primary": {"carol": 0}, "shadow": {"carol": 0}, "denied": {"primary": 0, "shadow": 0}, "base_limits": {"carol": 1}}
+  - name: caller config is not drained by a run
+    args: [{"dave": 3}, ["dave"], 1]
+    expected: {"checkpoint": {"dave": 2}, "primary": {"dave": 2}, "shadow": {"dave": 2}, "denied": {"primary": 0, "shadow": 0}, "base_limits": {"dave": 3}}
+hidden_tests:
+  - name: unknown user is denied by both trackers
+    args: [{"alice": 1}, ["mallory", "alice"], 2]
+    expected: {"checkpoint": {"alice": 0}, "primary": {"alice": 0}, "shadow": {"alice": 0}, "denied": {"primary": 1, "shadow": 1}, "base_limits": {"alice": 1}}
+  - name: no events leaves every view equal to base
+    args: [{"a": 2, "b": 5}, [], 0]
+    expected: {"checkpoint": {"a": 2, "b": 5}, "primary": {"a": 2, "b": 5}, "shadow": {"a": 2, "b": 5}, "denied": {"primary": 0, "shadow": 0}, "base_limits": {"a": 2, "b": 5}}
+  - name: exhausted user denied equally on both trackers
+    args: [{"eve": 1}, ["eve", "eve", "eve"], 1]
+    expected: {"checkpoint": {"eve": 0}, "primary": {"eve": 0}, "shadow": {"eve": 0}, "denied": {"primary": 2, "shadow": 2}, "base_limits": {"eve": 1}}
+  - name: interleaved users consume full paid quota
+    args: [{"a": 2, "b": 2}, ["a", "b", "a", "b"], 4]
+    expected: {"checkpoint": {"a": 0, "b": 0}, "primary": {"a": 0, "b": 0}, "shadow": {"a": 0, "b": 0}, "denied": {"primary": 0, "shadow": 0}, "base_limits": {"a": 2, "b": 2}}
+  - name: checkpoint is immune to later consumption
+    args: [{"zoe": 5}, ["zoe", "zoe", "zoe"], 1]
+    expected: {"checkpoint": {"zoe": 4}, "primary": {"zoe": 2}, "shadow": {"zoe": 2}, "denied": {"primary": 0, "shadow": 0}, "base_limits": {"zoe": 5}}
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **Constructor aliases the caller's dict** — `self.limits = base_limits`
+    stores a reference, not a copy. Both `primary` and `shadow` therefore share
+    the *same* dict object with each other **and** with the caller's config.
+    Every event decrements the shared dict twice (once per tracker), so users
+    hit zero at half their paid quota; whichever tracker consumes second is
+    denied earlier, so primary and shadow disagree; and the caller's
+    `base_limits` comes back drained, corrupting the next run. Fix:
+    `self.limits = dict(base_limits)` so each tracker owns an independent copy.
+  - **`remaining()` leaks internal state** — returning `self.limits` hands out
+    the live internal dict. The mid-stream checkpoint is then just another
+    alias that keeps mutating as later events are consumed, which is why the
+    checkpoint always equals the final state. Fix: return a snapshot,
+    `dict(self.limits)`. (Note the two bugs are independent: fixing only the
+    constructor still leaves the checkpoint tracking the final state, and
+    fixing only `remaining()` still corrupts the caller's config — the
+    hidden tests catch each partial fix separately.)
+solution: |
+  class QuotaTracker:
+      def __init__(self, label, base_limits):
+          self.label = label
+          self.limits = dict(base_limits)
+
+      def consume(self, user):
+          if self.limits.get(user, 0) > 0:
+              self.limits[user] -= 1
+              return True
+          return False
+
+      def remaining(self):
+          return dict(self.limits)
+
+  def apply_usage(base_limits, usage_events, checkpoint):
+      primary = QuotaTracker("primary", base_limits)
+      shadow = QuotaTracker("shadow", base_limits)
+      denied = {"primary": 0, "shadow": 0}
+      checkpoint_view = None
+      for index, user in enumerate(usage_events):
+          if index == checkpoint:
+              checkpoint_view = primary.remaining()
+          if not primary.consume(user):
+              denied["primary"] += 1
+          if not shadow.consume(user):
+              denied["shadow"] += 1
+      if checkpoint_view is None:
+          checkpoint_view = primary.remaining()
+      return {
+          "checkpoint": checkpoint_view,
+          "primary": primary.remaining(),
+          "shadow": shadow.remaining(),
+          "denied": denied,
+          "base_limits": base_limits,
+      }
+time_limit_seconds: 5
+memory_limit_mb: 256

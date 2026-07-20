@@ -1,0 +1,160 @@
+id: session-registry
+title: Tenant Session Registry Isolation
+difficulty: medium
+tags: [oop, class-attributes, state-leak]
+description: |
+  Your auth service keeps a per-tenant `SessionRegistry`: every tenant gets its
+  own registry instance, and each successful login registers a session id. A
+  reporting job walks the login event stream and, for each tenant, builds a
+  registry, replays that tenant's logins, and emits the tenant's active session
+  list, active count, and whether the tenant has hit its licensed session quota.
+
+  A pentest just flagged a serious finding: the report for tenant **globex**
+  contains session ids that belong to tenant **acme**. Cross-tenant session
+  visibility in an auth service is a severity-1 data-isolation breach. Support
+  has a second ticket open too: a tenant sitting **exactly at** its licensed
+  quota is reported as under quota, so enforcement never kicks in until the
+  tenant is already one session past the license.
+
+  ### Task
+
+  - Fix `SessionRegistry` so `summarize_tenants(tenant_events, quota)` produces
+    a correctly isolated report. Do **not** change the signature of
+    `summarize_tenants` or the names of the `SessionRegistry` methods.
+
+  ### Assumptions
+
+  - `tenant_events` is a list of `[tenant_name, session_ids]` pairs; tenant
+    names are unique within one call and `session_ids` is a list of strings
+    (possibly empty, possibly containing repeats).
+  - The same session id string may legitimately appear under different tenants
+    (ids are only unique within a tenant).
+  - `quota` is a positive integer and applies to every tenant.
+
+  ### Requirements
+
+  - Return a dict mapping each tenant name to
+    `{"sessions": [...], "active": n, "over_quota": bool}`.
+  - A tenant's `sessions` must contain exactly the ids that tenant registered,
+    deduplicated, in first-seen order — never another tenant's ids.
+  - `active` must equal the number of distinct sessions **that tenant**
+    registered, not a running total across tenants.
+  - A session id registered by one tenant must still register (and count) for a
+    different tenant.
+  - `over_quota` is true when `active >= quota` — a tenant exactly at quota is
+    over quota.
+constraints:
+  - "0 <= len(tenant_events) <= 10^3"
+  - "0 <= len(session_ids) <= 10^4 per tenant"
+  - "1 <= quota <= 10^4"
+function_name: summarize_tenants
+language: python
+starter_code: |
+  class SessionRegistry:
+      sessions = []
+      count = 0
+
+      def __init__(self, tenant):
+          self.tenant = tenant
+
+      def register(self, session_id):
+          if session_id in self.sessions:
+              return
+          self.sessions.append(session_id)
+          SessionRegistry.count += 1
+
+      def active_count(self):
+          return self.count
+
+      def is_over_quota(self, quota):
+          return self.active_count() > quota
+
+  def summarize_tenants(tenant_events, quota):
+      report = {}
+      for tenant, session_ids in tenant_events:
+          registry = SessionRegistry(tenant)
+          for session_id in session_ids:
+              registry.register(session_id)
+          report[tenant] = {
+              "sessions": list(registry.sessions),
+              "active": registry.active_count(),
+              "over_quota": registry.is_over_quota(quota),
+          }
+      return report
+visible_tests:
+  - name: tenants are isolated from each other
+    args: [[["acme", ["s1", "s2"]], ["globex", ["g1"]]], 5]
+    expected: {"acme": {"sessions": ["s1", "s2"], "active": 2, "over_quota": false}, "globex": {"sessions": ["g1"], "active": 1, "over_quota": false}}
+  - name: repeated session id registers once
+    args: [[["acme", ["s1", "s1", "s2"]]], 5]
+    expected: {"acme": {"sessions": ["s1", "s2"], "active": 2, "over_quota": false}}
+  - name: tenant exactly at quota is over quota
+    args: [[["acme", ["s1", "s2", "s3"]]], 3]
+    expected: {"acme": {"sessions": ["s1", "s2", "s3"], "active": 3, "over_quota": true}}
+hidden_tests:
+  - name: quiet tenant sees no foreign sessions
+    args: [[["acme", ["a1", "a2"]], ["globex", ["g1"]], ["initech", []]], 10]
+    expected: {"acme": {"sessions": ["a1", "a2"], "active": 2, "over_quota": false}, "globex": {"sessions": ["g1"], "active": 1, "over_quota": false}, "initech": {"sessions": [], "active": 0, "over_quota": false}}
+  - name: same session id counts for both tenants
+    args: [[["acme", ["s1"]], ["globex", ["s1", "g2"]], ["hooli", ["h1"]]], 10]
+    expected: {"acme": {"sessions": ["s1"], "active": 1, "over_quota": false}, "globex": {"sessions": ["s1", "g2"], "active": 2, "over_quota": false}, "hooli": {"sessions": ["h1"], "active": 1, "over_quota": false}}
+  - name: counts do not accumulate across tenants
+    args: [[["a", ["s1"]], ["b", ["s2"]], ["c", ["s3"]]], 2]
+    expected: {"a": {"sessions": ["s1"], "active": 1, "over_quota": false}, "b": {"sessions": ["s2"], "active": 1, "over_quota": false}, "c": {"sessions": ["s3"], "active": 1, "over_quota": false}}
+  - name: quota boundary of one
+    args: [[["acme", ["x"]]], 1]
+    expected: {"acme": {"sessions": ["x"], "active": 1, "over_quota": true}}
+  - name: no tenants yields empty report
+    args: [[], 3]
+    expected: {}
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **Class attributes used as per-instance state** — `sessions = []` and
+    `count = 0` are declared on the class, so every `SessionRegistry` instance
+    shares one list and one counter. Within a single `summarize_tenants` call,
+    tenant 2's registry sees (and reports) tenant 1's session ids — the
+    cross-tenant leakage the pentest flagged — the shared dedupe check silently
+    drops a session id an earlier tenant already used, and `active` becomes a
+    running total across all tenants. Fix: initialize `self.sessions = []` and
+    `self.count = 0` inside `__init__` so each registry owns its state.
+  - **Writing the counter on the class** — `SessionRegistry.count += 1`
+    increments the class-level counter explicitly, so even a candidate who
+    moves `count` into `__init__` must also change this line to
+    `self.count += 1`; otherwise reads and writes go to different attributes.
+  - **Off-by-one quota comparison** — `is_over_quota` uses `>` but the spec
+    says a tenant **at** quota is over quota; fix to `>=` so
+    `active == quota` reports true.
+solution: |
+  class SessionRegistry:
+      def __init__(self, tenant):
+          self.tenant = tenant
+          self.sessions = []
+          self.count = 0
+
+      def register(self, session_id):
+          if session_id in self.sessions:
+              return
+          self.sessions.append(session_id)
+          self.count += 1
+
+      def active_count(self):
+          return self.count
+
+      def is_over_quota(self, quota):
+          return self.active_count() >= quota
+
+  def summarize_tenants(tenant_events, quota):
+      report = {}
+      for tenant, session_ids in tenant_events:
+          registry = SessionRegistry(tenant)
+          for session_id in session_ids:
+              registry.register(session_id)
+          report[tenant] = {
+              "sessions": list(registry.sessions),
+              "active": registry.active_count(),
+              "over_quota": registry.is_over_quota(quota),
+          }
+      return report
+time_limit_seconds: 5
+memory_limit_mb: 256
