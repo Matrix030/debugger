@@ -157,6 +157,10 @@ body {
     overflow: hidden;
 }
 
+.problems-panel[hidden] {
+    display: none;
+}
+
 .problems-panel__header {
     display: flex;
     align-items: center;
