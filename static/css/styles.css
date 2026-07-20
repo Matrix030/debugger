@@ -538,6 +538,10 @@ body {
     flex-shrink: 0;
 }
 
+.results-console[hidden] {
+    display: none;
+}
+
 .results-console__header {
     display: flex;
     align-items: center;

@@ -35,16 +35,14 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gosu \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /app/data/db
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder --chown=root:root /app/.venv /app/.venv
 COPY --from=builder --chown=root:root /app/app /app/app
+# Baked-in fallback; the compose bind mount of ./data shadows this in practice.
 COPY --from=builder --chown=root:root /app/data/questions /app/data/questions
 COPY --from=builder --chown=root:root /app/templates /app/templates
 COPY --from=builder --chown=root:root /app/static /app/static
-COPY alembic.ini /app/alembic.ini
-COPY alembic /app/alembic
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

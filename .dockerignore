@@ -1,8 +1,7 @@
 .git
 .github
-.cursor
 .idea
-.kilocode
+.qwen
 .venv
 venv
 __pycache__
@@ -11,11 +10,6 @@ __pycache__
 .ruff_cache
 .coverage
 htmlcov
-*.db
-*.sqlite
-*.sqlite3
-data/config.json
-data/db
 tests
 docs
 *.md
