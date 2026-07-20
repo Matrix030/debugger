@@ -1,207 +1,224 @@
-# GrillKit
+# DebugLab
 
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version](https://img.shields.io/badge/version-2026.6.12-blue.svg)](CHANGELOG.md)
+A locally hosted, HackerRank-style practice platform for **Python debugging interviews**.
+Each question ships intentionally buggy code; the candidate edits it in a Monaco editor
+until the tests pass. Everything runs on your machine — no accounts, no API keys, no
+cloud services, no AI.
 
-Open-source AI technical interview trainer. Practice **theory Q&A**, **live coding**, or **both in one session** from curated YAML banks — with structured scoring, follow-ups, optional voice, and a local results history. Bring your own LLM (cloud or local).
+Built on the GrillKit codebase (FastAPI + Jinja2 + vanilla JS), with the AI interview
+features removed and code execution moved into a hardened local sandbox container.
 
-[Why GrillKit](#why-grillkit-not-just-chatgpt) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md) · [Architecture](ARCHITECTURE.md)
+## What you get
 
-## Why GrillKit (not just ChatGPT)
+- Split-pane interview UI: problem description left, Python editor right
+- **Run Code** — executes the visible (sample) tests only
+- **Submit** — executes visible **and** hidden tests; hidden results show only pass/fail
+- **Reset Code** — restores the original buggy starter code
+- Per-test results: pass/fail pills, expected vs. got, stdout/stderr, tracebacks
+- Prev/Next navigation with `Question 2 of 6` progress, difficulty badge, tags
+- Interview countdown timer (default 90:00) with Start/Pause/Reset, persisted across refreshes; expiry shows a clear state but never touches your code
+- Candidate code auto-saved to the browser's localStorage per question — survives refreshes
+- Questions are plain YAML files — add new ones without touching application code
 
-A general chat assistant is flexible, but it does not run an **interview** for you.
+## Architecture
 
-| What you need | ChatGPT-style chat | GrillKit |
-|---------------|-------------------|----------|
-| Curated technical questions | You prompt each time | Built-in **tracks** (Python, Kafka, System Design, …), **levels**, and **topics** |
-| Interview flow | Free-form thread | Fixed session: theory Q&A and/or coding tasks, up to **2 AI follow-ups** per item, **1–5 scoring**, session summary |
-| Live coding practice | Paste code in chat | **Monaco editor**, **Run** against public tests, **Submit** for hidden tests + AI review (needs Judge0) |
-| Practice history | Scattered chats | **Dashboard** with past sessions; open **results** and per-section **review** pages after completion |
-| Skip what you already know | You repeat the same prompts | **Known questions** — mark bank items during practice; optionally exclude them when starting a new session |
-| Time pressure | None | Optional **per-round timer** on theory and coding (expired round → 0, move on) |
-| Voice practice | Depends on product | Offline **Whisper** dictation; optional **Piper** question audio; **audio answers** when your model supports it |
-| Where data lives | Vendor cloud | **Self-hosted**: SQLite + `data/` on your machine; use **Ollama**, vLLM, or any OpenAI-compatible API |
+Two Docker services:
 
-**Structured practice** — You pick tracks, difficulty, and topics; GrillKit builds a question plan and keeps score across the whole session, not a single ad-hoc prompt.
+```
+┌────────────────────────┐         ┌─────────────────────────────┐
+│  app  (port 8000)      │  HTTP   │  runner  (sandbox)          │
+│  FastAPI + Jinja2      ├────────►│  FastAPI, POST /run         │
+│  question bank (YAML)  │         │  subprocess per test case   │
+│  run/submit API        │         │  python -I -S + rlimits     │
+└────────────────────────┘         └─────────────────────────────┘
+        │                                    ▲
+   browser: Monaco editor,          internal-only Docker network
+   localStorage persistence         (no internet, no host access)
+```
 
-**Privacy and control** — Run via Docker on your laptop or server. API keys and interview history stay under `./data` (gitignored). No account or subscription required beyond your LLM provider (if you use a cloud model).
+- **Candidate code never executes in the web server process.** The app POSTs the code
+  plus test cases to the `runner` service.
+- The runner container is hardened: non-root user, read-only root filesystem, all
+  Linux capabilities dropped, `no-new-privileges`, pids limit, 512 MB memory cap,
+  1 CPU, and it sits on an **internal-only** Docker network — code you execute cannot
+  reach the internet or the host.
+- Each test case runs in its own subprocess (`python -I -S`: isolated mode, no site
+  packages) inside a throwaway temp directory that is deleted after the run, with
+  POSIX rlimits for CPU time, memory, process count, file size, and open files, plus
+  a wall-clock timeout that SIGKILLs the whole process group.
+- No database. Question files are read from `data/questions/` (bind-mounted, so edits
+  appear on refresh); candidate code and the timer live in browser localStorage.
 
-## Screenshots & demo
+## Prerequisites
 
-**Demo video** — full flow from setup to scored feedback
+- [Docker](https://docs.docker.com/get-docker/) with Docker Compose v2
 
-https://github.com/user-attachments/assets/25655f1e-89d3-472f-8c1f-3f154df622b2
-
-
-**Dashboard** — recent sessions and quick start
-
-<p align="center">
-  <img src="./assets/dashboard.png" alt="GrillKit dashboard" width="900" />
-</p>
-
-**Interview setup** — question-bank tracks, levels, topics, and session options
-
-<p align="center">
-  <img src="./assets/interview-setup.png" alt="Interview setup" width="900" />
-</p>
-
-**Coding section** — Monaco editor, Run on public tests, Submit for AI evaluation
-
-<p align="center">
-  <img src="./assets/coding.png" alt="Coding interview session" width="900" />
-</p>
-
-**Theory section** — real-time Q&A with AI scoring and final evaluation
-
-<p align="center">
-  <img src="./assets/interview-session.png" alt="Completed interview with evaluation" width="900" />
-</p>
-
-## Features
-
-### Session modes
-
-Pick one mode on **New interview** (`/setup`):
-
-| Mode | What you practice |
-|------|-------------------|
-| **Theory only** | Technical Q&A from `data/questions/` — type, dictate, or record answers |
-| **Coding only** | Programming tasks from `data/coding/` — edit, Run, Submit |
-| **Theory then coding** | Q&A first, then coding panel when theory finishes |
-| **Coding then theory** | Coding first, then theory |
-
-Coding modes need a running [Judge0](https://github.com/judge0/judge0) instance (see **Coding sessions** below).
-
-### Practice tools
-
-- **Theory** — WebSocket Q&A, AI scoring 1–5, up to 2 follow-ups per question
-- **Coding** — Monaco editor, Run (`POST /coding/run`) on public tests, Submit (`WS /coding/ws`) with hidden tests and AI feedback
-- **Question banks** — Python, Database/SQL, System Design, Kafka, RabbitMQ, Docker, Kubernetes, Observability, Airflow, and more (junior / middle / senior where applicable)
-- **Timer** — optional per-round limit on theory and coding; expired rounds score 0 and the session moves on
-- **Voice** — offline Whisper dictation; optional Piper TTS to read theory questions aloud
-- **Audio answers** — record a WAV theory answer when your model supports audio input and Whisper is ready
-- **Results hub** — after you finish, `/interview/{id}/results` shows overall evaluation and links to **theory** and **coding** review pages with full chat/code history
-- **Known questions** — mark theory or coding bank items as **I know this** during an interview or on review pages; optionally exclude them on **New interview** setup; manage the list at `/known-questions/manage`
-- **Dashboard** — recent sessions on the home page (completed sessions link to results)
-- **Setup** — model catalog on `/config`, interview locale, Whisper/Piper downloads from the UI
-- **Deployment** — Docker Compose on port 8000 with `./data` volume for config, DB, and models
+That's it. No API keys, no cloud accounts, no external databases.
 
 ## Quick start
 
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
-- API key for a cloud provider, **or** a local OpenAI-compatible server (Ollama, vLLM, …)
-
-### Run with Docker
-
 ```bash
-git clone https://github.com/GrillKit/grillkit.git
 cd grillkit
 docker compose up --build
 ```
 
-Open [http://localhost:8000](http://localhost:8000).
+Then open **http://localhost:8000** — the first question loads automatically.
 
-Optional **question voice** (Piper TTS, same `app` container):
+To stop: `Ctrl-C`, or `docker compose down` from another terminal.
 
-1. Run `docker compose up` (or `uv run uvicorn app.main:app` for development).
-2. Open `/config`, enable **Read questions aloud**, save.
-3. On the Configuration page, use **Download question voice** when prompted (~60 MB per locale voice from Hugging Face).
-4. Start an interview — questions can play aloud; WAV cache lives under `data/tts-cache/v2/{locale}/`.
-
-`./data` on the host holds SQLite, `config.json`, `llm_models.json`, Whisper/Piper models, and TTS cache. Question banks, templates, and static files ship in the image.
-
-If bind-mounted `data/` is not writable (Linux UID mismatch):
+To reset completely (containers + images):
 
 ```bash
-PUID=$(id -u) PGID=$(id -g) docker compose up --build
+docker compose down --rmi local
 ```
 
-**Coding sessions** (Monaco + code execution) require [Judge0 CE](https://github.com/judge0/judge0). Start the optional `coding` profile:
+Candidate progress (saved code, timer) lives in the *browser*, not the server — clear
+it from your browser's site data, or use the Reset Code button per question.
 
-```bash
-docker compose --profile coding up --build
-```
-
-Judge0 listens on port `2358` inside the Compose network (`JUDGE0_URL=http://judge0-server:2358` for the `app` service). For local development without Docker, run Judge0 separately and point `JUDGE0_URL` at `http://localhost:2358`.
-
-On some Linux hosts Judge0 needs **cgroup v1** (`systemd.unified_cgroup_hierarchy=0` in GRUB). Set `CODING_ENABLED=false` to hide coding modes when Judge0 is unavailable.
-
-### First-time flow
-
-1. **Configuration** (`/config`) — add one or more OpenAI-compatible models to the catalog, select an interview model, set interview locale; test connection, then save. Download Whisper (and optionally a Piper voice) from the same page if you want voice features.
-2. **New interview** (`/setup`) — pick a **session mode** (theory only, coding only, or combined). Choose tracks, levels, topics, how many questions/tasks, optional per-round timers, and whether to **exclude known questions**. Coding modes require Judge0 (see **Coding sessions** above).
-3. **Practice** (`/interview/{id}`) — answer theory questions in the chat (type, dictate, or record audio). On coding phases, use the editor: **Run** to check public tests, **Submit** when ready. Combined sessions switch panels automatically when a section ends (or use **Continue to Coding**). End the interview from the sidebar at any time.
-4. **Review** (`/interview/{id}/results`) — after completion, read the overall evaluation, then open **Theory** or **Coding** review for full conversation history, scores, and feedback.
-
-Without saved provider config, `/setup` redirects to `/config`.
-
-### Local development
-
-For contributors: see [CONTRIBUTING.md](CONTRIBUTING.md). Quick run:
+## Running without Docker (development)
 
 ```bash
 uv sync --extra dev
-uv run uvicorn app.main:app --reload
+uv run uvicorn runner_service.main:app --port 8001 --app-dir runner &  # sandbox-lite
+uv run uvicorn app.main:app --port 8000
 ```
 
-Same first-time flow at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Note: outside Docker the runner still uses subprocess isolation and rlimits, but you
+lose the container hardening and network isolation — use Docker for real sessions.
 
-## Configuration (essentials)
+## Questions
 
-Any **OpenAI-compatible** HTTP API works:
+Questions live in `data/questions/*.yaml`, loaded in filename order (use numeric
+prefixes: `001_...`, `002_...`). `example.yaml` is a fully commented template that the
+loader deliberately skips — copy it to start a new question:
 
-| Provider | Example base URL |
-|----------|------------------|
-| OpenAI | `https://api.openai.com/v1` |
-| Ollama | `http://localhost:11434/v1` |
-| vLLM / others | your endpoint + `/v1` |
+```bash
+cp data/questions/example.yaml data/questions/007_my_question.yaml
+# edit it, then refresh the browser (no restart needed)
+```
 
-On `/config`:
+### Question schema
 
-- **Add model to catalog** — display name, base URL, model name, optional API key (a stable catalog id is generated automatically from the display name); enable **Accepts audio input** only if the model supports multimodal audio (and download Whisper for transcription).
-- **Interview model** — pick from the catalog, **Test Connection**, save.
-- **Locale** — language for AI feedback and speech (stored in `data/config.json`, gitignored).
-- **Whisper** — choose size (`small`, `medium`, `large`), download from the UI for dictation and audio answers.
-- **Read questions aloud** — enable Piper, download a voice (~60 MB).
+```yaml
+id: validate-fragment-offsets   # unique lowercase-kebab slug
+title: Validate Fragment Offsets Sequence
+difficulty: medium              # easy | medium | hard
+tags: [off-by-one, validation]  # short lowercase tags
 
-Do not commit `data/config.json`, `data/llm_models.json`, or API keys.
+description: |                  # Markdown; shown to the candidate
+  Scenario paragraph...
 
-Optional environment variables (full list in [ARCHITECTURE.md](ARCHITECTURE.md#persistence--configuration)):
+  ### Task
+  - Fix the implementation...
 
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | SQLAlchemy URL (default: SQLite under `data/db/`) |
-| `HF_TOKEN` | Hugging Face token for faster Whisper/Piper downloads |
-| `WHISPER_DEVICE` | `cpu` or `cuda` |
-| `WHISPER_COMPUTE_TYPE` | `int8` or `float16` |
-| `CODING_ENABLED` | Enable coding session modes (default `true`; requires healthy Judge0) |
-| `JUDGE0_URL` | Judge0 API base URL (default `http://localhost:2358`) |
-| `JUDGE0_AUTH_TOKEN` | Optional Judge0 `X-Auth-Token` header |
-| `CODING_MAX_RUNS_PER_TASK` | Max Run attempts per coding task (default `20`) |
+constraints:                    # list of strings, rendered as a section
+  - "0 <= len(offsets) <= 10^5"
 
-## Roadmap
+function_name: validate_fragments   # must be a top-level def in starter_code AND solution
+language: python                    # only python is supported
 
-**Planned**
+starter_code: |                 # the intentionally buggy code the candidate sees
+  def validate_fragments(offsets, max_offset, overlap_limit):
+      ...
 
-- Session-wide time limit (total interview duration)
-- More question banks and categories
-- Custom question banks, PWA / standalone frontend
+visible_tests:                  # shown to the candidate; Run executes these
+  - name: rejects offset above mtu
+    args: [[0, 800, 1600], 1400, 1]   # positional arguments (JSON values)
+    expected: false                   # expected return value (JSON value)
 
-## For developers
+hidden_tests:                   # never sent to the browser; Submit adds these
+  - name: handles empty input
+    args: [[], 1400, 1]
+    expected: true
 
-| Document | Contents |
-|----------|----------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Feature modules, routes, data flows, persistence, test layout |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Dev setup, quality checks, question/coding YAML guidelines |
-| [CHANGELOG.md](CHANGELOG.md) | Release history |
+interviewer_notes: |            # for the question author; never exposed via the API
+  Bug 1: ... Bug 2: ...
 
-## Security
+solution: |                     # reference fix; never exposed via the API
+  def validate_fragments(offsets, max_offset, overlap_limit):
+      ...
 
-Report vulnerabilities as described in [SECURITY.md](SECURITY.md). Do not open public issues for security problems.
+time_limit_seconds: 5           # per test case, 1-30 (default 5)
+memory_limit_mb: 256            # 64-1024 (default 256)
+```
+
+Validation happens at load time: bad YAML, missing fields, duplicate ids, or a
+`function_name` that isn't defined in both `starter_code` and `solution` produce a
+clear error. The test suite additionally proves every shipped question's `solution`
+passes **all** tests and its `starter_code` fails at least one.
+
+### How test comparison works
+
+Each test calls `function_name(*args)` and compares the return value with `expected`
+after a JSON round-trip. Practical consequences:
+
+- Returning a tuple compares equal to a YAML list (`(1, 2)` matches `[1, 2]`).
+- Return values must be JSON-representable (numbers, strings, bools, None,
+  lists, dicts). Sets or custom objects produce a clear "not JSON-comparable" error.
+- Floats are compared exactly — design questions around integers/strings/bools.
+- `print()` output is captured and shown to the candidate but never compared.
+
+### Visible vs. hidden tests
+
+- **Run Code** sends only `visible_tests` to the sandbox; results include full detail
+  (expected, actual, stdout, stderr, tracebacks).
+- **Submit** sends `visible_tests + hidden_tests`. Hidden results are redacted to a
+  generic label (`Hidden test 1`) and a status — no inputs, expected values, output,
+  or error text ever leave the server. `interviewer_notes` and `solution` are never
+  serialized by any endpoint; the response models have no fields for them, and the
+  test suite scans every candidate endpoint for leaks.
+
+## The timer
+
+- Lives in the top bar; default 90 minutes. Start/Pause/Reset controls.
+- Persisted in localStorage — refreshing the page keeps the countdown.
+- Under 5 minutes it turns amber; at zero it shows a red "Time expired" state.
+- Expiry never auto-submits and never deletes code.
+
+## Project layout
+
+```
+app/                  FastAPI web app (pages + candidate JSON API)
+  questions.py        YAML schema + validating loader (mtime-cached)
+  execution.py        HTTP client for the sandbox runner
+  api/candidate.py    /api/questions, /api/run, /api/submit
+runner/               execution sandbox service (own Docker image)
+  runner_service/     executor (subprocess + rlimits), harness, FastAPI app
+data/questions/       question bank (YAML) + example.yaml template
+templates/, static/   UI (Monaco is vendored under static/vendor/monaco — no CDN)
+tests/                pytest suite
+```
+
+## Testing & linting
+
+```bash
+uv run pytest                  # includes real-subprocess sandbox tests
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy .
+```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `Code execution service is unavailable` in the UI | The runner container isn't healthy. `docker compose ps`, then `docker compose logs runner`. |
+| Port 8000 already in use | Stop the other process, or edit the `ports:` mapping in `docker-compose.yml`. |
+| Question edits don't show up | Ensure you edited `data/questions/` (bind-mounted) and refresh; check `docker compose logs app` for validation errors. |
+| A question fails to load with a validation error | The app logs name the file and field; `example.yaml` documents every field. |
+| Every test times out | The machine may be heavily loaded; raise `time_limit_seconds` in the question YAML. |
+| Stale UI after rebuilding | Hard-refresh (Cmd-Shift-R); assets are cache-busted by file mtime, but the browser may cache the HTML. |
+| Docker build fails pulling images | Check connectivity/registry access; the build needs the `python:3.12-slim` and uv base images once. |
+
+## Security notes
+
+This is a **local, single-user practice tool**: there is deliberately no
+authentication, and it binds to localhost via the compose port mapping. Do not expose
+it to an untrusted network. The sandbox is designed to stop accidents (infinite
+loops, memory bombs, network calls) rather than a determined attacker with kernel
+exploits.
 
 ## License
 
-[Apache License 2.0](LICENSE) (see also [NOTICE](NOTICE))
+Apache 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Derived from the GrillKit
+project.
