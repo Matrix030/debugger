@@ -15,7 +15,8 @@ features removed and code execution moved into a hardened local sandbox containe
 - **Submit** — executes visible **and** hidden tests; hidden results show only pass/fail
 - **Reset Code** — restores the original buggy starter code
 - Per-test results: pass/fail pills, expected vs. got, stdout/stderr, tracebacks
-- Prev/Next navigation with `Question 2 of 6` progress, difficulty badge, tags
+- **Problems** picker in the top bar: jump directly to any question, grouped into sections (e.g. Core Debugging, Object-Oriented), with a solved checkmark tracked in localStorage
+- Prev/Next navigation with `Question 2 of 9` progress, difficulty badge, tags
 - Interview countdown timer (default 90:00) with Start/Pause/Reset, persisted across refreshes; expiry shows a clear state but never touches your code
 - Candidate code auto-saved to the browser's localStorage per question — survives refreshes
 - Questions are plain YAML files — add new ones without touching application code
@@ -103,6 +104,7 @@ cp data/questions/example.yaml data/questions/007_my_question.yaml
 id: validate-fragment-offsets   # unique lowercase-kebab slug
 title: Validate Fragment Offsets Sequence
 difficulty: medium              # easy | medium | hard
+category: Core Debugging        # free text; groups questions in the Problems picker (default "General")
 tags: [off-by-one, validation]  # short lowercase tags
 
 description: |                  # Markdown; shown to the candidate

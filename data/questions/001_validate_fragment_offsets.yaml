@@ -1,6 +1,7 @@
 id: validate-fragment-offsets
 title: Validate Fragment Offsets Sequence
 difficulty: medium
+category: Core Debugging
 tags: [off-by-one, validation, edge-cases, networking]
 description: |
   You are maintaining a security validation routine for a network appliance. Before

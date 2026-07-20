@@ -1,6 +1,7 @@
 id: request-counter
 title: API Gateway Request Counter
 difficulty: easy
+category: Core Debugging
 tags: [early-return, missing-keys, aggregation]
 description: |
   Your team runs an API gateway that emits one record per proxied request. A

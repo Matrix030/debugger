@@ -1,6 +1,7 @@
 id: log-window-scan
 title: Brute-Force Login Window Detector
 difficulty: medium
+category: Core Debugging
 tags: [off-by-one, sliding-window, boundary-conditions, security]
 description: |
   You maintain the detection rules for a SIEM. One rule flags brute-force

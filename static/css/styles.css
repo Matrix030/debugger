@@ -135,6 +135,123 @@ body {
     white-space: nowrap;
 }
 
+/* ---------- Problems picker ---------- */
+
+.problems-picker {
+    position: relative;
+}
+
+.problems-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 22rem;
+    max-height: min(28rem, 70vh);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 30;
+    overflow: hidden;
+}
+
+.problems-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.9rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.problems-panel__list {
+    overflow-y: auto;
+    padding: 0.4rem;
+}
+
+.problems-category {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0.6rem 0.6rem 0.3rem;
+}
+
+.problems-category:first-child {
+    padding-top: 0.3rem;
+}
+
+.problems-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.87rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.problems-item:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.problems-item--active {
+    background: var(--primary-soft);
+    color: var(--text-primary);
+}
+
+.problems-item__status {
+    flex-shrink: 0;
+    width: 1.1rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.problems-item--solved .problems-item__status {
+    color: var(--success-text);
+}
+
+.problems-item__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.problems-item__difficulty {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.problems-item__difficulty--easy {
+    color: var(--success-text);
+}
+
+.problems-item__difficulty--medium {
+    color: var(--warning-text);
+}
+
+.problems-item__difficulty--hard {
+    color: var(--error-text);
+}
+
 /* ---------- Timer ---------- */
 
 .timer {

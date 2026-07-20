@@ -1,6 +1,7 @@
 id: quota-tracker
 title: API Quota Tracker Aliasing
 difficulty: hard
+category: Object-Oriented
 tags: [oop, aliasing, defensive-copy, mutation]
 description: |
   Your API gateway enforces per-user request quotas. A `QuotaTracker` is built

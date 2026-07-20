@@ -1,6 +1,7 @@
 id: session-registry
 title: Tenant Session Registry Isolation
 difficulty: medium
+category: Object-Oriented
 tags: [oop, class-attributes, state-leak]
 description: |
   Your auth service keeps a per-tenant `SessionRegistry`: every tenant gets its

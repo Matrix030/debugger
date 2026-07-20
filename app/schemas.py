@@ -20,6 +20,7 @@ class QuestionSummary(BaseModel):
     id: str
     title: str
     difficulty: str
+    category: str
     tags: list[str]
     index: int
     total: int
@@ -39,6 +40,7 @@ class CandidateQuestion(BaseModel):
     id: str
     title: str
     difficulty: str
+    category: str
     tags: list[str]
     description_html: str
     constraints: list[str]

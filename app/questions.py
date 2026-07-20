@@ -44,6 +44,7 @@ class Question(BaseModel):
     id: str
     title: str = Field(min_length=1)
     difficulty: Literal["easy", "medium", "hard"]
+    category: str = Field(default="General", min_length=1)
     tags: list[str] = Field(default_factory=list)
     description: str = Field(min_length=1)
     constraints: list[str] = Field(default_factory=list)

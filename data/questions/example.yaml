@@ -16,6 +16,12 @@ title: Service Health Check (Template Example)
 # One of: easy | medium | hard (lowercase).
 difficulty: easy
 
+# Section this question appears under in the question picker (free text,
+# author-controlled). Existing sections: "Core Debugging", "Object-Oriented".
+# Reuse an existing section name to group with those questions, or invent a
+# new one to start a new section. Defaults to "General" if omitted.
+category: Core Debugging
+
 # 2-4 lowercase kebab-case tags describing the bug classes / topics.
 tags: [comparison-operator, template]
 

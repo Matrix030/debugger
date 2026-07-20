@@ -1,6 +1,7 @@
 id: alert-batcher
 title: Alert Pipeline Batch Summarizer
 difficulty: medium
+category: Core Debugging
 tags: [mutable-default, state-leak, aliasing]
 description: |
   Your alerting pipeline processes detections in scan cycles. Each cycle produces

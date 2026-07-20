@@ -4,6 +4,7 @@
 
     const CODE_KEY_PREFIX = "debuglab:code:";
     const LAST_QUESTION_KEY = "debuglab:last-question";
+    const SOLVED_KEY = "debuglab:solved";
 
     let questions = [];
     let current = null;
@@ -14,6 +15,11 @@
     const progressEl = document.getElementById("question-progress");
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
+    const problemsBtn = document.getElementById("problems-btn");
+    const problemsPanel = document.getElementById("problems-panel");
+    const problemsList = document.getElementById("problems-list");
+    const problemsClose = document.getElementById("problems-close");
+    const problemsPicker = document.getElementById("problems-picker");
     const runBtn = document.getElementById("run-btn");
     const submitBtn = document.getElementById("submit-btn");
     const resetBtn = document.getElementById("reset-btn");
@@ -66,6 +72,25 @@
         }
     }
 
+    function readSolvedSet() {
+        try {
+            const raw = JSON.parse(readStored(SOLVED_KEY) || "[]");
+            return Array.isArray(raw) ? new Set(raw) : new Set();
+        } catch (_err) {
+            return new Set();
+        }
+    }
+
+    function markSolved(questionId) {
+        const solved = readSolvedSet();
+        if (solved.has(questionId)) {
+            return;
+        }
+        solved.add(questionId);
+        writeStored(SOLVED_KEY, JSON.stringify(Array.from(solved)));
+        renderProblemsList();
+    }
+
     function setBusy(value, label) {
         busy = value;
         [runBtn, submitBtn, resetBtn, prevBtn, nextBtn].forEach(function (btn) {
@@ -87,6 +112,79 @@
         }
         prevBtn.disabled = current.index <= 0;
         nextBtn.disabled = current.index >= current.total - 1;
+    }
+
+    function renderProblemsList() {
+        if (!problemsList) {
+            return;
+        }
+        if (!questions.length) {
+            problemsList.innerHTML =
+                '<p class="problem-loading">No questions found.</p>';
+            return;
+        }
+        const solved = readSolvedSet();
+        const currentId = current ? current.id : null;
+        const categories = [];
+        const byCategory = new Map();
+        questions.forEach(function (question) {
+            const category = question.category || "General";
+            if (!byCategory.has(category)) {
+                byCategory.set(category, []);
+                categories.push(category);
+            }
+            byCategory.get(category).push(question);
+        });
+        let html = "";
+        categories.forEach(function (category) {
+            html += '<div class="problems-category">' + escapeHtml(category) + "</div>";
+            byCategory.get(category).forEach(function (question) {
+                const isSolved = solved.has(question.id);
+                const isActive = question.id === currentId;
+                html +=
+                    '<button type="button" class="problems-item' +
+                    (isSolved ? " problems-item--solved" : "") +
+                    (isActive ? " problems-item--active" : "") +
+                    '" data-question-id="' +
+                    escapeHtml(question.id) +
+                    '" role="menuitem">';
+                html +=
+                    '<span class="problems-item__status" aria-hidden="true">' +
+                    (isSolved ? "&#10003;" : "&#9675;") +
+                    "</span>";
+                html +=
+                    '<span class="problems-item__title">' +
+                    escapeHtml(question.title) +
+                    "</span>";
+                html +=
+                    '<span class="problems-item__difficulty problems-item__difficulty--' +
+                    escapeHtml(question.difficulty) +
+                    '">' +
+                    escapeHtml(question.difficulty) +
+                    "</span>";
+                html += "</button>";
+            });
+        });
+        problemsList.innerHTML = html;
+    }
+
+    function openProblemsPanel() {
+        renderProblemsList();
+        problemsPanel.hidden = false;
+        problemsBtn.setAttribute("aria-expanded", "true");
+    }
+
+    function closeProblemsPanel() {
+        problemsPanel.hidden = true;
+        problemsBtn.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleProblemsPanel() {
+        if (problemsPanel.hidden) {
+            openProblemsPanel();
+        } else {
+            closeProblemsPanel();
+        }
     }
 
     function difficultyBadge(difficulty) {
@@ -266,6 +364,9 @@
             showResults("Submission — syntax error");
             return;
         }
+        if (payload.all_passed && current) {
+            markSolved(current.id);
+        }
         let html = "";
         if (payload.all_passed) {
             html +=
@@ -340,6 +441,7 @@
                 progressEl.textContent =
                     "Question " + (question.index + 1) + " of " + question.total;
                 updateNavButtons();
+                renderProblemsList();
                 const saved = readStored(codeKey(question.id));
                 const value = saved != null ? saved : question.starter_code;
                 return window.debuglabEditor.init(
@@ -437,6 +539,36 @@
     });
     nextBtn.addEventListener("click", function () {
         navigate(1);
+    });
+
+    problemsBtn.addEventListener("click", function (event) {
+        event.stopPropagation();
+        toggleProblemsPanel();
+    });
+    problemsClose.addEventListener("click", closeProblemsPanel);
+    problemsList.addEventListener("click", function (event) {
+        const item = event.target.closest(".problems-item");
+        if (!item || busy) {
+            return;
+        }
+        const questionId = item.getAttribute("data-question-id");
+        closeProblemsPanel();
+        if (questionId && (!current || questionId !== current.id)) {
+            loadQuestion(questionId);
+        }
+    });
+    document.addEventListener("click", function (event) {
+        if (
+            !problemsPanel.hidden &&
+            !problemsPicker.contains(event.target)
+        ) {
+            closeProblemsPanel();
+        }
+    });
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !problemsPanel.hidden) {
+            closeProblemsPanel();
+        }
     });
 
     fetch("/api/questions")

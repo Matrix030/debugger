@@ -1,6 +1,7 @@
 id: connection-pruner
 title: Firewall Connection Table Pruner
 difficulty: medium
+category: Core Debugging
 tags: [mutation-during-iteration, list-handling, networking]
 description: |
   A stateful firewall keeps a connection table: a list of entries like

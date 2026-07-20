@@ -5,6 +5,21 @@
 
 {% block navbar_center %}
 <div class="question-nav">
+    <div class="problems-picker" id="problems-picker">
+        <button id="problems-btn" class="btn btn-secondary btn-sm" type="button"
+                aria-haspopup="true" aria-expanded="false">
+            <span aria-hidden="true">&#9776;</span> Problems
+        </button>
+        <div id="problems-panel" class="problems-panel" role="menu" hidden>
+            <div class="problems-panel__header">
+                <span>Problems</span>
+                <button id="problems-close" class="btn btn-ghost btn-sm" type="button">&times;</button>
+            </div>
+            <div id="problems-list" class="problems-panel__list">
+                <p class="problem-loading">Loading&hellip;</p>
+            </div>
+        </div>
+    </div>
     <button id="prev-btn" class="btn btn-ghost btn-sm" type="button" disabled>&larr; Prev</button>
     <span id="question-progress" class="question-progress">Loading&hellip;</span>
     <button id="next-btn" class="btn btn-ghost btn-sm" type="button" disabled>Next &rarr;</button>

@@ -1,6 +1,7 @@
 id: event-filter-validator
 title: Event Filter Validator
 difficulty: medium
+category: Core Debugging
 tags: [rule-ordering, missing-keys, defensive-coding, security]
 description: |
   You inherited a legacy event validator used by several downstream security

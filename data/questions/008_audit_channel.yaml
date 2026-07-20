@@ -1,6 +1,7 @@
 id: audit-channel
 title: Audit Log Channel Inheritance
 difficulty: medium
+category: Object-Oriented
 tags: [oop, inheritance, super-init]
 description: |
   Your compliance platform ships audit events to long-term storage through
