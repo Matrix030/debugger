@@ -150,6 +150,26 @@ def test_stdout_captured_separately():
     assert "DEBUGLAB_RESULT" not in result.stdout
 
 
+def test_debug_prints_survive_timeout():
+    """Unbuffered stdio: print() output must be visible even when the
+    process is killed by the time limit — the main debug-print use case."""
+    code = (
+        "def add(a, b):\n"
+        '    print("reached checkpoint", a, b)\n'
+        "    while True:\n"
+        "        pass\n"
+    )
+    result = run_single_test(
+        code,
+        "add",
+        TestSpec(name="loop", args=[1, 2], expected=3),
+        time_limit_seconds=1,
+        memory_limit_mb=256,
+    )
+    assert result.status == "timeout"
+    assert "reached checkpoint 1 2" in result.stdout
+
+
 def test_stdout_truncated():
     code = 'def add(a, b):\n    print("x" * 200_000)\n    return a + b\n'
     response = run_batch(

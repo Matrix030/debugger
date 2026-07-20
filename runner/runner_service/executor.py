@@ -101,8 +101,10 @@ def run_single_test(
             ),
         )
 
+        # -u: unbuffered stdio, so debug print() output survives even when
+        # the process is SIGKILLed by the timeout or memory limit.
         process = subprocess.Popen(  # noqa: S603
-            [sys.executable, "-I", "-S", "harness.py"],
+            [sys.executable, "-u", "-I", "-S", "harness.py"],
             cwd=workdir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

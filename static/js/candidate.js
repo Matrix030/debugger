@@ -207,9 +207,9 @@
             }
             if (result.stdout) {
                 html +=
-                    '<details class="result-output"><summary>stdout</summary><pre>' +
+                    '<div class="result-stdout"><div class="result-stdout__label">stdout</div><pre class="result-stdout__pre">' +
                     escapeHtml(result.stdout) +
-                    "</pre></details>";
+                    "</pre></div>";
             }
             if (result.stderr) {
                 html +=

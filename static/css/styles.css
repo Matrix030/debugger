@@ -676,6 +676,33 @@ body {
     color: var(--error-text);
 }
 
+.result-stdout {
+    margin-top: 0.45rem;
+}
+
+.result-stdout__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.result-stdout__pre {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--info);
+    background: var(--editor-bg);
+    border: 1px solid var(--editor-border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.7rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 12rem;
+    overflow-y: auto;
+}
+
 .result-output {
     margin-top: 0.4rem;
 }
