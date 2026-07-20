@@ -2,13 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Wire contract between the web app and the execution sandbox."""
 
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, Field
 
 
 class TestSpec(BaseModel):
     """One test to execute: call the function with args, compare to expected."""
+
+    __test__: ClassVar[bool] = False  # not a pytest class despite the name
 
     name: str
     args: list[Any]
@@ -34,6 +36,8 @@ class SyntaxErrorInfo(BaseModel):
 
 class TestResult(BaseModel):
     """Outcome of a single test case."""
+
+    __test__: ClassVar[bool] = False  # not a pytest class despite the name
 
     name: str
     status: Literal["passed", "failed", "error", "timeout"]

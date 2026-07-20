@@ -126,7 +126,9 @@ def run_single_test(
                     f"execution exceeded the {time_limit_seconds}s time limit"
                 ),
             )
-        return _parse_result(test, process.returncode, stdout or "", stderr or "")
+        return _parse_result(
+            test, process.returncode, stdout or "", stderr or "", time_limit_seconds
+        )
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
@@ -163,7 +165,11 @@ def _kill_group(process: subprocess.Popen[str]) -> None:
 
 
 def _parse_result(
-    test: TestSpec, returncode: int | None, stdout: str, stderr: str
+    test: TestSpec,
+    returncode: int | None,
+    stdout: str,
+    stderr: str,
+    time_limit_seconds: int,
 ) -> TestResult:
     user_stdout_lines: list[str] = []
     payload: dict[str, object] | None = None
@@ -180,6 +186,18 @@ def _parse_result(
     user_stdout = "\n".join(user_stdout_lines)
 
     if payload is None:
+        # The CPU rlimit delivers SIGXCPU before the wall-clock timeout fires;
+        # surface that as a timeout, not a generic crash.
+        if returncode == -signal.SIGXCPU:
+            return TestResult(
+                name=test.name,
+                status="timeout",
+                stdout=_output_cap(user_stdout),
+                stderr=_output_cap(stderr),
+                error_message=(
+                    f"execution exceeded the {time_limit_seconds}s CPU time limit"
+                ),
+            )
         return TestResult(
             name=test.name,
             status="error",
