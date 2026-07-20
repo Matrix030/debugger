@@ -1,0 +1,106 @@
+id: validate-fragment-offsets
+title: Validate Fragment Offsets Sequence
+difficulty: medium
+tags: [off-by-one, validation, edge-cases, networking]
+description: |
+  You are maintaining a security validation routine for a network appliance. Before
+  fragment reassembly, the data plane validates a sequence of fragment offsets
+  (integers). Inputs are untrusted and can arrive out of order, so the validator must
+  never assume the sequence is sorted.
+
+  A valid sequence must satisfy two rules:
+
+  1. **MTU compliance** — every offset must be `<= max_offset`.
+  2. **Redundancy limit** — no offset value may appear more than `overlap_limit`
+     times (`overlap_limit = 1` means all offsets must be unique; `overlap_limit = 3`
+     means an offset may appear up to 3 times).
+
+  ### Task
+
+  - You are given a function that attempts to enforce these rules but contains
+    logical and safety defects.
+  - Fix the implementation so it is correct for all inputs. Do **not** change the
+    function signature.
+
+  ### Assumptions
+
+  - `offsets` is a list of non-negative integers, in arbitrary (unsorted) order.
+  - `max_offset` is a non-negative integer.
+  - `overlap_limit` is an integer `>= 1`.
+  - The input list may be empty.
+
+  ### Requirements
+
+  - If **any** offset is `> max_offset`, return `False` (not just the last one).
+  - If **any** offset value appears more than `overlap_limit` times, return `False`.
+  - An offset appearing exactly `overlap_limit` times is still valid.
+  - An empty sequence is trivially valid: return `True`. The function must not raise.
+constraints:
+  - "0 <= len(offsets) <= 10^5"
+  - "0 <= offsets[i] <= 10^9"
+  - "0 <= max_offset <= 10^9"
+  - "1 <= overlap_limit <= 10^5"
+function_name: validate_fragments
+language: python
+starter_code: |
+  def validate_fragments(offsets, max_offset, overlap_limit):
+      n = len(offsets)
+      for i in range(overlap_limit, n):
+          if offsets[i] == offsets[i - overlap_limit]:
+              return False
+      return offsets[n - 1] <= max_offset
+visible_tests:
+  - name: rejects duplicate beyond limit in unsorted input
+    args: [[0, 1200, 0], 1400, 1]
+    expected: false
+  - name: rejects offset above mtu
+    args: [[0, 800, 1600], 1400, 1]
+    expected: false
+  - name: accepts valid unique sequence
+    args: [[800, 0, 400], 1400, 1]
+    expected: true
+hidden_tests:
+  - name: empty input is valid and must not crash
+    args: [[], 1400, 1]
+    expected: true
+  - name: oversized offset hidden in the middle
+    args: [[1600, 0], 1400, 1]
+    expected: false
+  - name: allows exactly overlap limit repetitions
+    args: [[500, 500, 500], 1400, 3]
+    expected: true
+  - name: rejects value exceeding overlap limit when interleaved
+    args: [[500, 100, 500, 200, 500, 300, 500], 1400, 3]
+    expected: false
+  - name: boundary offset equal to max is allowed
+    args: [[1400], 1400, 1]
+    expected: true
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **Adjacency-window duplicate check** — comparing `offsets[i]` to
+    `offsets[i - overlap_limit]` only detects a value appearing `overlap_limit + 1`
+    times when those occurrences are consecutive, i.e. it only works on sorted input
+    (and even then it conflates "appears within a window" with "appears more than
+    the limit"). Unsorted duplicates like `[0, 1200, 0]` slip through. Fix: count
+    occurrences of each value (e.g. a dict/Counter) and reject when any count
+    exceeds `overlap_limit`.
+  - **Only the last offset is checked against `max_offset`** — the final
+    `return offsets[n - 1] <= max_offset` ignores every other element, so
+    `[1600, 0]` with `max_offset=1400` is wrongly accepted. Fix: check every offset
+    (reject as soon as one exceeds the limit).
+  - **IndexError on empty input** — with `n == 0`, `offsets[n - 1]` is
+    `offsets[-1]`, which raises `IndexError` on an empty list. Fix: the counting
+    loop naturally handles the empty case; return `True` when no rule is violated.
+solution: |
+  def validate_fragments(offsets, max_offset, overlap_limit):
+      counts = {}
+      for offset in offsets:
+          if offset > max_offset:
+              return False
+          counts[offset] = counts.get(offset, 0) + 1
+          if counts[offset] > overlap_limit:
+              return False
+      return True
+time_limit_seconds: 5
+memory_limit_mb: 256

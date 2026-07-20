@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}DebugLab — Practice{% endblock %}
+{% block main_class %} main-content--workspace{% endblock %}
+
+{% block navbar_center %}
+<div class="question-nav">
+    <button id="prev-btn" class="btn btn-ghost btn-sm" type="button" disabled>&larr; Prev</button>
+    <span id="question-progress" class="question-progress">Loading&hellip;</span>
+    <button id="next-btn" class="btn btn-ghost btn-sm" type="button" disabled>Next &rarr;</button>
+</div>
+{% endblock %}
+
+{% block navbar_right %}
+<div class="timer" id="timer-widget">
+    <span id="timer-display" class="timer__display" title="Interview timer">90:00</span>
+    <span class="timer__controls">
+        <button id="timer-toggle" class="btn btn-ghost btn-sm" type="button" title="Start / pause timer">Start</button>
+        <button id="timer-reset" class="btn btn-ghost btn-sm" type="button" title="Reset timer">Reset</button>
+    </span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="workspace" id="workspace">
+    <section class="problem-pane" id="problem-pane" aria-label="Problem description">
+        <div id="problem-body" class="problem-body">
+            <p class="problem-loading">Loading question&hellip;</p>
+        </div>
+    </section>
+
+    <section class="editor-pane" aria-label="Code editor">
+        <div class="editor-shell">
+            <div class="editor-shell__header">
+                <span class="editor-shell__lang">Python 3</span>
+                <span id="save-indicator" class="editor-shell__saved" hidden>Saved locally</span>
+            </div>
+            <div id="code-editor" class="editor-shell__monaco"></div>
+            <div id="results-console" class="results-console" hidden>
+                <div class="results-console__header">
+                    <span id="results-title">Results</span>
+                    <button id="results-close" class="btn btn-ghost btn-sm" type="button">&times;</button>
+                </div>
+                <div id="results-body" class="results-console__body"></div>
+            </div>
+            <div class="editor-shell__footer">
+                <span id="cursor-position" class="editor-shell__cursor">Line: 1 Col: 1</span>
+                <div class="editor-shell__actions">
+                    <button id="reset-btn" class="btn btn-secondary" type="button">Reset Code</button>
+                    <button id="run-btn" class="btn btn-run" type="button">Run Code</button>
+                    <button id="submit-btn" class="btn btn-submit" type="button">Submit</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/editor.js?v={{ static_version('js/editor.js') }}"></script>
+<script src="/static/js/timer.js?v={{ static_version('js/timer.js') }}"></script>
+<script src="/static/js/candidate.js?v={{ static_version('js/candidate.js') }}"></script>
+{% endblock %}

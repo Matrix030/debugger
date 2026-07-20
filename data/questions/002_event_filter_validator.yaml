@@ -1,0 +1,125 @@
+id: event-filter-validator
+title: Event Filter Validator
+difficulty: medium
+tags: [rule-ordering, missing-keys, defensive-coding, security]
+description: |
+  You inherited a legacy event validator used by several downstream security
+  services. An event is a dict with the shape
+  `{"type": "NETWORK" | "ENDPOINT" | ..., "severity": 1-100, "attributes": {str: str}}`,
+  and `validate_event(event)` decides whether the event is allowed into the
+  pipeline (`True`) or dropped (`False`). Other teams report that the validator
+  crashes on some real traffic and drops events it should trust.
+
+  ### Task
+
+  - Fix the implementation so it enforces the rules below, in this exact
+    precedence order, without crashing on any valid input shape. Do **not** change
+    the function signature.
+
+  ### Assumptions
+
+  - `event` may be `None`. `event["attributes"]` may be `None`.
+  - When `event` is a dict, the keys `"type"`, `"severity"`, and `"attributes"`
+    are always present.
+  - Keys **inside** `attributes` (such as `"source"`, `"source_ip"`,
+    `"agent_version"`) may be missing — a missing key must never crash the
+    validator.
+  - String comparisons are exact: text must match exactly and case matters.
+
+  ### Requirements
+
+  Apply the rules in this order; the first rule that matches decides the result:
+
+  - **Null guard**: if `event` is `None` or `event["attributes"]` is `None`,
+    return `False`.
+  - **Logic 1 — trusted internal sources are allowed automatically**: if
+    `attributes["source"]` equals `"trusted_internal"`, return `True` (this takes
+    precedence over every drop rule below).
+  - **Logic 2 — drop critical network events missing a source IP**: if
+    `type == "NETWORK"` and `severity >= 90` and `"source_ip"` is not a key of
+    `attributes`, return `False`.
+  - **Logic 3 — block legacy endpoint agents**: if `type == "ENDPOINT"` and
+    `attributes["agent_version"]` equals `"1.0"`, return `False`.
+  - Otherwise return `True`.
+constraints:
+  - "1 <= severity <= 100 when event is not None"
+  - "attributes contains at most 32 string keys"
+  - "the function must never raise for inputs matching the assumptions"
+function_name: validate_event
+language: python
+starter_code: |
+  def validate_event(event):
+      if event is None:
+          return False
+      attributes = event["attributes"]
+      if event["type"] == "NETWORK" and event["severity"] >= 90 and "source_ip" not in attributes:
+          return False
+      if attributes["source"] == "trusted_internal":
+          return True
+      if event["type"] == "ENDPOINT" and attributes["agent_version"] == "1.0":
+          return False
+      return True
+visible_tests:
+  - name: trusted internal critical network event is allowed
+    args: [{"type": "NETWORK", "severity": 95, "attributes": {"source": "trusted_internal"}}]
+    expected: true
+  - name: critical network event missing source ip is dropped
+    args: [{"type": "NETWORK", "severity": 95, "attributes": {"source": "partner_feed"}}]
+    expected: false
+  - name: none event is rejected
+    args: [null]
+    expected: false
+hidden_tests:
+  - name: null attributes must not crash
+    args: [{"type": "ENDPOINT", "severity": 10, "attributes": null}]
+    expected: false
+  - name: missing source key must not crash
+    args: [{"type": "NETWORK", "severity": 50, "attributes": {}}]
+    expected: true
+  - name: legacy endpoint agent is blocked
+    args: [{"type": "ENDPOINT", "severity": 20, "attributes": {"source": "field_sensor", "agent_version": "1.0"}}]
+    expected: false
+  - name: endpoint missing agent_version key must not crash
+    args: [{"type": "ENDPOINT", "severity": 20, "attributes": {"source": "field_sensor"}}]
+    expected: true
+  - name: severity below 90 network event without source ip is allowed
+    args: [{"type": "NETWORK", "severity": 89, "attributes": {"source": "edge_router"}}]
+    expected: true
+  - name: source match is case sensitive
+    args: [{"type": "ENDPOINT", "severity": 10, "attributes": {"source": "Trusted_Internal", "agent_version": "1.0"}}]
+    expected: false
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **Rule ordering is wrong** — the Logic 2 network drop runs *before* the
+    Logic 1 trusted-internal allow, so a critical NETWORK event from
+    `"trusted_internal"` without a `source_ip` is wrongly dropped. The spec says
+    the trusted-internal allow takes precedence over every drop rule. Fix: check
+    `attributes.get("source") == "trusted_internal"` first (right after the null
+    guards).
+  - **No guard for `attributes` being `None`** — `"source_ip" not in attributes`
+    (and any subscript of `attributes`) raises `TypeError` when
+    `event["attributes"]` is `None`. Fix: return `False` when `attributes is None`,
+    immediately after the `event is None` check.
+  - **Direct key access on optional attribute keys** — `attributes["source"]`
+    raises `KeyError` whenever `"source"` is missing, and
+    `attributes["agent_version"]` raises `KeyError` for ENDPOINT events without
+    that key. The spec says missing attribute keys must never crash. Fix: use
+    `attributes.get(...)` for both lookups; `.get` returns `None`, which simply
+    fails the equality comparison.
+solution: |
+  def validate_event(event):
+      if event is None:
+          return False
+      attributes = event["attributes"]
+      if attributes is None:
+          return False
+      if attributes.get("source") == "trusted_internal":
+          return True
+      if event["type"] == "NETWORK" and event["severity"] >= 90 and "source_ip" not in attributes:
+          return False
+      if event["type"] == "ENDPOINT" and attributes.get("agent_version") == "1.0":
+          return False
+      return True
+time_limit_seconds: 5
+memory_limit_mb: 256

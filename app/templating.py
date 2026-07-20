@@ -1,10 +1,10 @@
-# Copyright 2026 GrillKit Contributors
+# Copyright 2026 DebugLab Contributors
 # SPDX-License-Identifier: Apache-2.0
 """Shared Jinja2 templates and static asset helpers."""
 
 from fastapi.templating import Jinja2Templates
 
-from app.shared.paths import STATIC_DIR, TEMPLATES_DIR
+from app.paths import STATIC_DIR, TEMPLATES_DIR
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 

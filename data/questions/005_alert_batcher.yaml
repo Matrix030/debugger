@@ -1,0 +1,116 @@
+id: alert-batcher
+title: Alert Pipeline Batch Summarizer
+difficulty: medium
+tags: [mutable-default, state-leak, aliasing]
+description: |
+  Your alerting pipeline processes detections in scan cycles. Each cycle produces
+  a group of alerts (dicts like `{"id": "ALRT-77", "severity": 82}`), and for
+  every cycle the pager service needs the list of alert ids that must page the
+  on-call engineer: alerts with `severity >= 50`, deduplicated **within that
+  cycle**, in first-seen order. Cycles are independent — if the same critical
+  alert id fires in two different cycles, it must page in both.
+
+  On-call reports two symptoms: later cycles mysteriously "remember" alert ids
+  from earlier cycles and suppress them, and every cycle's page list in the
+  summary looks identical (each one contains the ids from *all* cycles).
+
+  ### Task
+
+  - Fix `summarize_batches(alert_groups)` so each cycle is summarized
+    independently. Do **not** change the signature of `summarize_batches`; you may
+    fix the helper it calls.
+
+  ### Assumptions
+
+  - `alert_groups` is a list of cycles; each cycle is a list of alert dicts.
+  - Every alert dict has `"id"` (string) and `"severity"` (int 1-100).
+  - Cycles and the outer list may be empty.
+
+  ### Requirements
+
+  - Return a list with one entry per cycle, in order: the list of paging alert
+    ids (`severity >= 50`) for that cycle.
+  - Deduplicate ids **within** a cycle only (keep first occurrence order).
+  - An id that pages in one cycle must still page in a later cycle.
+  - The returned per-cycle lists must be independent objects — mutating one must
+    not affect another.
+  - `severity == 50` pages; `severity == 49` does not.
+constraints:
+  - "0 <= len(alert_groups) <= 10^3"
+  - "0 <= len(cycle) <= 10^4 per cycle"
+  - "1 <= severity <= 100"
+function_name: summarize_batches
+language: python
+starter_code: |
+  def summarize_batches(alert_groups):
+      summaries = []
+      for group in alert_groups:
+          summaries.append(build_page_list(group))
+      return summaries
+
+  def build_page_list(group, page_ids=[]):
+      for alert in group:
+          if alert["severity"] >= 50 and alert["id"] not in page_ids:
+              page_ids.append(alert["id"])
+      return page_ids
+visible_tests:
+  - name: cycles are summarized independently
+    args: [[[{"id": "a", "severity": 90}], [{"id": "b", "severity": 90}]]]
+    expected: [["a"], ["b"]]
+  - name: low severity alerts do not page
+    args: [[[{"id": "a", "severity": 90}, {"id": "c", "severity": 10}]]]
+    expected: [["a"]]
+  - name: same id pages again in a later cycle
+    args: [[[{"id": "a", "severity": 70}, {"id": "b", "severity": 55}], [{"id": "a", "severity": 70}]]]
+    expected: [["a", "b"], ["a"]]
+hidden_tests:
+  - name: duplicate id within one cycle pages once
+    args: [[[{"id": "a", "severity": 70}, {"id": "a", "severity": 95}, {"id": "b", "severity": 60}]]]
+    expected: [["a", "b"]]
+  - name: empty cycle stays empty even after a paging cycle
+    args: [[[{"id": "x", "severity": 80}], [], [{"id": "y", "severity": 80}]]]
+    expected: [["x"], [], ["y"]]
+  - name: no cycles yields empty summary
+    args: [[]]
+    expected: []
+  - name: severity boundary at 50 pages and 49 does not
+    args: [[[{"id": "a", "severity": 49}, {"id": "b", "severity": 50}]]]
+    expected: [["b"]]
+  - name: three cycles do not bleed into each other
+    args: [[[{"id": "a", "severity": 60}], [{"id": "b", "severity": 60}], [{"id": "c", "severity": 60}]]]
+    expected: [["a"], ["b"], ["c"]]
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **Mutable default argument** — `def build_page_list(group, page_ids=[])`
+    creates the default list **once**, at function definition time. Every call
+    that omits `page_ids` reuses the same list object, so within a single
+    `summarize_batches` call the ids accumulated for cycle 1 are still in
+    `page_ids` when cycle 2 is processed. Consequences: (1) an id that already
+    paged in an earlier cycle is suppressed in later cycles by the
+    `not in page_ids` dedupe check (cross-cycle state leak), and (2) new ids from
+    later cycles are appended into the earlier cycles' results.
+  - **Aliasing in the result** — because every call returns that same shared
+    list, `summaries` ends up holding N references to **one** list object; every
+    per-cycle summary is identical and equals the union of all cycles, and
+    mutating one entry mutates them all.
+  - **Fix** — use the `None` sentinel idiom:
+    `def build_page_list(group, page_ids=None):` then
+    `if page_ids is None: page_ids = []` so each call gets a fresh, independent
+    list. (Equivalently, have `summarize_batches` pass a new list explicitly.)
+solution: |
+  def summarize_batches(alert_groups):
+      summaries = []
+      for group in alert_groups:
+          summaries.append(build_page_list(group))
+      return summaries
+
+  def build_page_list(group, page_ids=None):
+      if page_ids is None:
+          page_ids = []
+      for alert in group:
+          if alert["severity"] >= 50 and alert["id"] not in page_ids:
+              page_ids.append(alert["id"])
+      return page_ids
+time_limit_seconds: 5
+memory_limit_mb: 256

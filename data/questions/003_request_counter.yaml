@@ -1,0 +1,104 @@
+id: request-counter
+title: API Gateway Request Counter
+difficulty: easy
+tags: [early-return, missing-keys, aggregation]
+description: |
+  Your team runs an API gateway that emits one record per proxied request. A
+  billing job aggregates these records into a per-user count of *valid* requests.
+  Ops reports two problems in production: the job crashes on some batches, and on
+  others it bills every user for at most one request no matter how much traffic
+  they sent.
+
+  Each request record is a dict like
+  `{"user_id": "u-1042", "status": 200, "response_time": 340}` where
+  `response_time` is in milliseconds. A request is **valid** when
+  `status == 200` and `response_time <= 1000`.
+
+  ### Task
+
+  - Fix `count_valid_requests(requests)` so it returns a dict mapping each user id
+    to that user's count of valid requests. Do **not** change the function
+    signature.
+
+  ### Assumptions
+
+  - `requests` is a list of dicts; it may be empty.
+  - `"status"` and `"response_time"` are always present in every record.
+  - `"user_id"` may be **missing** from a record (anonymous health-check traffic).
+    Such records must be skipped entirely and must not crash the job.
+
+  ### Requirements
+
+  - Every record in the batch must be processed, not just the first one.
+  - A user who appears only in invalid requests must still appear in the result
+    with a count of `0`.
+  - Records without a `"user_id"` key contribute nothing and create no entry.
+  - An empty batch returns `{}`.
+constraints:
+  - "0 <= len(requests) <= 10^5"
+  - "0 <= response_time <= 60000"
+  - "user_id values are non-empty strings"
+function_name: count_valid_requests
+language: python
+starter_code: |
+  def count_valid_requests(requests):
+      counts = {}
+      for request in requests:
+          user_id = request["user_id"]
+          if user_id not in counts:
+              counts[user_id] = 0
+          if request["status"] == 200 and request["response_time"] <= 1000:
+              counts[user_id] += 1
+          return counts
+      return counts
+visible_tests:
+  - name: counts valid requests per user across whole batch
+    args: [[{"user_id": "u1", "status": 200, "response_time": 300}, {"user_id": "u1", "status": 200, "response_time": 900}, {"user_id": "u2", "status": 500, "response_time": 100}]]
+    expected: {"u1": 2, "u2": 0}
+  - name: skips records missing user_id without crashing
+    args: [[{"status": 200, "response_time": 100}, {"user_id": "u3", "status": 200, "response_time": 100}]]
+    expected: {"u3": 1}
+  - name: empty batch returns empty dict
+    args: [[]]
+    expected: {}
+hidden_tests:
+  - name: slow request over 1000ms is invalid
+    args: [[{"user_id": "u1", "status": 200, "response_time": 1001}]]
+    expected: {"u1": 0}
+  - name: boundary response time of exactly 1000ms is valid
+    args: [[{"user_id": "u1", "status": 200, "response_time": 1000}]]
+    expected: {"u1": 1}
+  - name: user with only failed requests still appears with zero
+    args: [[{"user_id": "u9", "status": 503, "response_time": 20}, {"user_id": "u9", "status": 502, "response_time": 25}]]
+    expected: {"u9": 0}
+  - name: mixed batch with anonymous records interleaved
+    args: [[{"user_id": "a", "status": 200, "response_time": 10}, {"status": 200, "response_time": 10}, {"user_id": "b", "status": 200, "response_time": 2000}, {"user_id": "a", "status": 200, "response_time": 500}]]
+    expected: {"a": 2, "b": 0}
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **`return counts` sits inside the `for` loop** — the function returns after
+    processing only the first record, so every batch yields at most one user with
+    at most one counted request. This is the "bills everyone for one request"
+    symptom. Fix: dedent the return so it executes after the loop finishes.
+  - **Direct `request["user_id"]` access** — records without a `"user_id"` key
+    raise `KeyError`, crashing the whole batch. The spec says such records must be
+    skipped. Fix: check `"user_id" not in request` (or use `request.get`) and
+    `continue` before touching counts.
+  - Note the subtlety candidates should preserve: the zero-initialization of
+    `counts[user_id]` must happen for *every* record that has a user id, even
+    invalid ones, so users with only invalid traffic still appear with `0`.
+solution: |
+  def count_valid_requests(requests):
+      counts = {}
+      for request in requests:
+          if "user_id" not in request:
+              continue
+          user_id = request["user_id"]
+          if user_id not in counts:
+              counts[user_id] = 0
+          if request["status"] == 200 and request["response_time"] <= 1000:
+              counts[user_id] += 1
+      return counts
+time_limit_seconds: 5
+memory_limit_mb: 256

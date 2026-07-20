@@ -1,0 +1,98 @@
+id: connection-pruner
+title: Firewall Connection Table Pruner
+difficulty: medium
+tags: [mutation-during-iteration, list-handling, networking]
+description: |
+  A stateful firewall keeps a connection table: a list of entries like
+  `{"ip": "10.0.0.7", "state": "established"}`. A periodic maintenance job prunes
+  the table by removing entries whose peer IP is on the current blocklist, as
+  well as any connection stuck in the `"half_open"` state (a classic SYN-flood
+  residue). SREs report that after each pruning pass, some entries that should
+  have been removed are still in the table — reliably, it is entries that sat
+  **right after** another removed entry.
+
+  ### Task
+
+  - Fix `prune_connections(connections, blocklist)` so it returns the correctly
+    pruned table. Do **not** change the function signature.
+
+  ### Assumptions
+
+  - `connections` is a list of dicts, each with string keys `"ip"` and `"state"`;
+    it may be empty.
+  - `blocklist` is a list of IP strings; it may be empty and may contain IPs not
+    present in the table.
+  - IP comparison is exact string equality.
+
+  ### Requirements
+
+  - Remove an entry if its `"ip"` is in `blocklist` **or** its `"state"` equals
+    `"half_open"` (either condition alone is enough).
+  - Every removable entry must be removed — including runs of consecutive
+    removable entries.
+  - Surviving entries keep their original relative order.
+  - Return the pruned list of entry dicts.
+constraints:
+  - "0 <= len(connections) <= 10^5"
+  - "0 <= len(blocklist) <= 10^4"
+  - "state is one of: established, half_open, closing, time_wait"
+function_name: prune_connections
+language: python
+starter_code: |
+  def prune_connections(connections, blocklist):
+      for conn in connections:
+          if conn["ip"] in blocklist or conn["state"] == "half_open":
+              connections.remove(conn)
+      return connections
+visible_tests:
+  - name: consecutive half open entries are all removed
+    args: [[{"ip": "1.1.1.1", "state": "half_open"}, {"ip": "2.2.2.2", "state": "half_open"}, {"ip": "3.3.3.3", "state": "established"}], []]
+    expected: [{"ip": "3.3.3.3", "state": "established"}]
+  - name: blocklisted ip is removed even when established
+    args: [[{"ip": "9.9.9.9", "state": "established"}, {"ip": "8.8.8.8", "state": "established"}], ["9.9.9.9"]]
+    expected: [{"ip": "8.8.8.8", "state": "established"}]
+  - name: clean table is returned unchanged
+    args: [[{"ip": "10.0.0.1", "state": "established"}, {"ip": "10.0.0.2", "state": "time_wait"}], []]
+    expected: [{"ip": "10.0.0.1", "state": "established"}, {"ip": "10.0.0.2", "state": "time_wait"}]
+hidden_tests:
+  - name: fully removable table becomes empty
+    args: [[{"ip": "1.1.1.1", "state": "half_open"}, {"ip": "2.2.2.2", "state": "half_open"}, {"ip": "3.3.3.3", "state": "half_open"}, {"ip": "4.4.4.4", "state": "half_open"}], []]
+    expected: []
+  - name: empty table stays empty
+    args: [[], ["1.2.3.4"]]
+    expected: []
+  - name: adjacent blocklist hit then half open are both removed
+    args: [[{"ip": "5.5.5.5", "state": "established"}, {"ip": "6.6.6.6", "state": "half_open"}, {"ip": "7.7.7.7", "state": "established"}], ["5.5.5.5"]]
+    expected: [{"ip": "7.7.7.7", "state": "established"}]
+  - name: survivors keep original order around removals
+    args: [[{"ip": "a", "state": "established"}, {"ip": "b", "state": "half_open"}, {"ip": "c", "state": "closing"}, {"ip": "d", "state": "half_open"}, {"ip": "e", "state": "time_wait"}], []]
+    expected: [{"ip": "a", "state": "established"}, {"ip": "c", "state": "closing"}, {"ip": "e", "state": "time_wait"}]
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **List mutation during iteration** — `connections.remove(conn)` inside
+    `for conn in connections` shifts every later element one slot left while the
+    iterator's internal index still advances. The element immediately after each
+    removed entry is therefore never visited, so runs of consecutive removable
+    entries leave every second one behind (exactly the SRE symptom: survivors sit
+    right after a removed entry). Fix: build a new list of survivors (list
+    comprehension or append loop) instead of mutating the list being iterated —
+    or iterate over a copy.
+  - **`list.remove` removes by equality, not identity** — with duplicate-looking
+    dict entries it can delete an earlier equal entry rather than the current
+    one; another reason to avoid remove-while-iterating entirely.
+  - **In-place mutation of the caller's table** — the starter destroys the input
+    list the caller handed in. Returning a fresh list keeps the function
+    side-effect free. (For efficiency, a set lookup for the blocklist turns the
+    per-entry check from O(len(blocklist)) into O(1).)
+solution: |
+  def prune_connections(connections, blocklist):
+      blocked = set(blocklist)
+      pruned = []
+      for conn in connections:
+          if conn["ip"] in blocked or conn["state"] == "half_open":
+              continue
+          pruned.append(conn)
+      return pruned
+time_limit_seconds: 5
+memory_limit_mb: 256

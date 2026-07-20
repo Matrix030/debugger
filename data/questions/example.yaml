@@ -1,0 +1,113 @@
+# =============================================================================
+# DebugLab question template
+# =============================================================================
+# Copy this file, rename it (e.g. 007_my_question.yaml), and fill in every
+# field. Files named exactly "example.yaml" are ignored by the app's loader,
+# so this template never shows up as a real question.
+# -----------------------------------------------------------------------------
+
+# Unique slug for the question. Lowercase letters, digits, and hyphens only
+# ([a-z0-9-]+). Must be unique across all question files.
+id: example-health-check
+
+# Human-readable title shown in the question list.
+title: Service Health Check (Template Example)
+
+# One of: easy | medium | hard (lowercase).
+difficulty: easy
+
+# 2-4 lowercase kebab-case tags describing the bug classes / topics.
+tags: [comparison-operator, template]
+
+# Markdown description shown to the candidate. Use the pipe (|) block scalar so
+# newlines are preserved. Recommended structure: one scenario paragraph, then
+# "### Task", "### Assumptions", and "### Requirements" sections with bullets.
+description: |
+  You run a tiny health-check service. A probe reports a service healthy when
+  its latest latency sample is strictly under the SLO limit in milliseconds.
+  The current probe wrongly reports "healthy" for samples exactly at the limit.
+
+  ### Task
+
+  - Fix `is_healthy(latency_ms, slo_ms)` so it matches the spec below. Do not
+    change the function signature.
+
+  ### Assumptions
+
+  - Both arguments are non-negative integers.
+
+  ### Requirements
+
+  - Return `True` only when `latency_ms` is strictly less than `slo_ms`.
+  - A sample exactly at the SLO limit is NOT healthy.
+
+# List of short, formal constraint strings (bounds on input sizes/values).
+constraints:
+  - "0 <= latency_ms <= 10^6"
+  - "0 <= slo_ms <= 10^6"
+
+# Name of the function under test, in snake_case. It MUST be defined as a
+# top-level "def" in BOTH starter_code and solution. The test runner imports
+# it by this exact name.
+function_name: is_healthy
+
+# Currently always "python".
+language: python
+
+# The buggy code the candidate starts from. Use the pipe (|) block scalar and
+# real 4-space Python indentation. It must parse and define function_name at
+# top level. At least one test below should fail (or raise) against it.
+starter_code: |
+  def is_healthy(latency_ms, slo_ms):
+      return latency_ms <= slo_ms
+
+# Tests the candidate can see while working. At least 2 (aim for 3).
+#   name:     short lowercase description of what the test checks
+#   args:     positional arguments, as JSON/YAML values (lists, dicts,
+#             strings, numbers, true/false, null). Wrap ALL args in one list:
+#             f(a, b) -> args: [a, b]. A single list argument is nested:
+#             f([1, 2]) -> args: [[1, 2]].
+#   expected: the JSON value the function must return. The actual return value
+#             is JSON round-tripped before comparison, so tuples become lists
+#             and dict keys become strings — prefer returning bool/int/str/
+#             list/dict, and never expect a tuple.
+visible_tests:
+  - name: fast sample is healthy
+    args: [120, 500]
+    expected: true
+  - name: sample exactly at the slo is unhealthy
+    args: [500, 500]
+    expected: false
+
+# Tests the candidate cannot see. At least 3 (aim for 4-5). Cover edge cases:
+# empty inputs, boundary values, and each specific bug in starter_code.
+hidden_tests:
+  - name: slow sample is unhealthy
+    args: [900, 500]
+    expected: false
+  - name: zero latency is healthy when slo positive
+    args: [0, 1]
+    expected: true
+  - name: zero slo means nothing is healthy
+    args: [0, 0]
+    expected: false
+
+# Notes for the interviewer / reviewer, hidden from the candidate. Explain
+# EVERY bug in starter_code (one bullet each) and its fix.
+interviewer_notes: |
+  Bugs in the starter code:
+
+  - **`<=` instead of `<`** — the spec requires strictly-less-than the SLO
+    limit; the starter's `latency_ms <= slo_ms` wrongly reports a sample at
+    exactly the limit as healthy. Fix: use `latency_ms < slo_ms`.
+
+# The reference solution. Same rules as starter_code: pipe block scalar,
+# defines function_name at top level, and must pass EVERY visible and hidden
+# test above.
+solution: |
+  def is_healthy(latency_ms, slo_ms):
+      return latency_ms < slo_ms
+
+# Per-test execution limits enforced by the runner.
+time_limit_seconds: 5
+memory_limit_mb: 256

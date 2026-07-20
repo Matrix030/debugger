@@ -1,0 +1,108 @@
+id: log-window-scan
+title: Brute-Force Login Window Detector
+difficulty: medium
+tags: [off-by-one, sliding-window, boundary-conditions, security]
+description: |
+  You maintain the detection rules for a SIEM. One rule flags brute-force
+  attempts: given the epoch timestamps (seconds) of failed logins for a single
+  account, it must decide whether any time window of `window_seconds` contains at
+  least `threshold` failed attempts. The current implementation misses attacks
+  that end exactly at the window boundary and attacks that occur at the tail of
+  the log — both confirmed by incident review.
+
+  **Window definition (inclusive boundaries):** a group of attempts at timestamps
+  `t_1 <= t_2 <= ... <= t_k` fits in one window when `t_k - t_1 <= window_seconds`.
+  For example, attempts at `0` and `60` with `window_seconds = 60` are in the same
+  window.
+
+  ### Task
+
+  - Fix `has_brute_force_window(timestamps, window_seconds, threshold)` so it
+    returns `True` exactly when some window of `window_seconds` contains
+    `>= threshold` attempts. Do **not** change the function signature.
+
+  ### Assumptions
+
+  - `timestamps` is sorted in non-decreasing order and may be empty.
+  - Duplicate timestamps are possible (multiple failures in the same second).
+  - `window_seconds >= 0` and `threshold >= 1`.
+
+  ### Requirements
+
+  - Boundaries are inclusive: a span of exactly `window_seconds` counts
+    (`t_k - t_1 <= window_seconds`, not `<`).
+  - Exactly `threshold` attempts in a window must trigger detection (`>=`, not `>`).
+  - A window ending at the **last** timestamp must be considered — the final
+    group of attempts is the most common attack position.
+  - With `threshold = 1`, any single attempt triggers detection.
+  - An empty log returns `False`.
+constraints:
+  - "0 <= len(timestamps) <= 10^5"
+  - "timestamps are non-decreasing epoch seconds"
+  - "0 <= window_seconds <= 10^6"
+  - "1 <= threshold <= 10^5"
+function_name: has_brute_force_window
+language: python
+starter_code: |
+  def has_brute_force_window(timestamps, window_seconds, threshold):
+      for i in range(len(timestamps) - threshold):
+          if timestamps[i + threshold - 1] - timestamps[i] < window_seconds:
+              return True
+      return False
+visible_tests:
+  - name: detects burst spanning exactly the window
+    args: [[0, 10, 20, 30], 30, 4]
+    expected: true
+  - name: spread out attempts are not flagged
+    args: [[0, 100, 200, 300], 30, 3]
+    expected: false
+  - name: detects burst inside longer log
+    args: [[0, 5, 6, 7, 100], 10, 3]
+    expected: true
+hidden_tests:
+  - name: burst at the very end of the log is detected
+    args: [[0, 100, 101, 102], 5, 3]
+    expected: true
+  - name: inclusive boundary span equal to window is detected
+    args: [[0, 60, 1000, 2000], 60, 2]
+    expected: true
+  - name: empty log returns false
+    args: [[], 60, 3]
+    expected: false
+  - name: threshold of one flags any single attempt
+    args: [[5], 60, 1]
+    expected: true
+  - name: just over the window is not flagged
+    args: [[0, 30, 61], 60, 3]
+    expected: false
+  - name: duplicate timestamps in same second are counted
+    args: [[50, 50, 50], 0, 3]
+    expected: true
+interviewer_notes: |
+  Bugs in the starter code (the fixed-size-group approach itself is sound on
+  sorted input: some window holds >= threshold attempts iff some run of exactly
+  `threshold` consecutive attempts spans <= window_seconds):
+
+  - **Off-by-one in the loop bound** — `range(len(timestamps) - threshold)` stops
+    one group early; the correct bound is `len(timestamps) - threshold + 1`. The
+    group ending at the last timestamp is never examined, so tail-of-log attacks
+    like `[0, 100, 101, 102]` with threshold 3 are missed. This also breaks
+    `threshold == 1` on a single-element log (`range(0)` runs zero iterations).
+  - **Strict `<` instead of inclusive `<=`** — the spec defines inclusive
+    boundaries (`t_k - t_1 <= window_seconds`), but the starter uses
+    `< window_seconds`, so a burst spanning exactly the window (e.g. `[0, 60]`
+    with window 60) is missed. This also breaks the duplicate-timestamp case with
+    `window_seconds = 0`, where the span is `0` and `0 < 0` is false.
+
+  Note: the visible test `[[0, 10, 20, 30], 30, 4]` fails on the starter for
+  both reasons at once — `range(0)` never iterates, and even with the corrected
+  range the span `30 < 30` would be false.
+solution: |
+  def has_brute_force_window(timestamps, window_seconds, threshold):
+      n = len(timestamps)
+      for i in range(n - threshold + 1):
+          if timestamps[i + threshold - 1] - timestamps[i] <= window_seconds:
+              return True
+      return False
+time_limit_seconds: 5
+memory_limit_mb: 256
